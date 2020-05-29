@@ -16,7 +16,7 @@ ArduinoPID is an optimized PID controller library with autotuner for the arduino
 
 ## Performance
 
-~ 69 μsec per execution with all features enabled. Tested up to 10kHz control loop frequency.
+~ 75 μsec per execution with all features enabled. Tested up to 10kHz control loop frequency.
 ```computeInLoop()``` is to be called inside ```loop()``` and checks the ```micros()```.
 ```compute()``` can be alternatively called inside a timer ISR for even better performance 
 
