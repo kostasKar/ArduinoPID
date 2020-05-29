@@ -77,8 +77,8 @@ class ArduinoPID{
 	
 	volatile int32_t setpoint;
 	volatile int32_t measurement;
-	int16_t error;
-	int16_t lastError;			//used if FILTRED_DERIVATIVE == false
+	int32_t error;
+	int32_t lastError;			//used if FILTRED_DERIVATIVE == false
 	int32_t lastMeasurement;	//used if FILTRED_DERIVATIVE == false
 	
 	DerivativeFiltered derFiltered;
