@@ -75,6 +75,7 @@ const int ONBOARD_LED =	  13;
 
 AutoTune autoTuner(AUTOTUNER_SETPOINT, AUTOTUNER_OUTPUT_STEP, AUTOTUNER_HYSTERESIS);
 
+void setMotorSpeed (int32_t outputValue);
 #if ANTIPHASE_LOCK
 ArduinoPID pid(setMotorSpeed, D_FILTER_N, PID_FREQ_HZ, 0, TIMER_TOP, &autoTuner);
 #else
