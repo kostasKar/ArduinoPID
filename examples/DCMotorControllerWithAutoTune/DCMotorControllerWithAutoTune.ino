@@ -38,10 +38,10 @@
  *---------------------------------------------------------------------
  */
 //Motor driving configuration
-#define PWM_FREQ        20000     //(Hz)
+#define PWM_FREQ        20000         //(Hz)
 #define TIMER_TOP       ((F_CPU / PWM_FREQ)-1)  //The highest value of the PWM timer
-#define ANTIPHASE_LOCK  false     //antiphase-lock driving mode of the motor. Alternative is sign-magnitude
-#define DIR_INPUT_INV   false     //invert the logic of the DIR input signal`
+#define ANTIPHASE_LOCK  false         //antiphase-lock driving mode of the motor. Alternative is sign-magnitude
+#define DIR_INPUT_INV   false         //invert the logic of the DIR input signal`
 
 //PID configuration
 #define D_FILTER_N      300.0         //the derivative filter's cutoff (rad/sec)
