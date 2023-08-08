@@ -38,33 +38,33 @@
  *---------------------------------------------------------------------
  */
 //Motor driving configuration
-#define PWM_FREQ		    20000			//(Hz)
-#define TIMER_TOP	((F_CPU / PWM_FREQ)-1)	//The highest value of the PWM timer
-#define ANTIPHASE_LOCK	false			//antiphase-lock driving mode of the motor. Alternative is sign-magnitude
+#define PWM_FREQ        20000     //(Hz)
+#define TIMER_TOP       ((F_CPU / PWM_FREQ)-1)  //The highest value of the PWM timer
+#define ANTIPHASE_LOCK  false     //antiphase-lock driving mode of the motor. Alternative is sign-magnitude
 #define DIR_INPUT_INV   false     //invert the logic of the DIR input signal`
 
 //PID configuration
-#define D_FILTER_N		  300.0					//the derivative filter's cutoff (rad/sec)
-#define PID_FREQ_HZ     1000					//Sampling frequency of the PID loop
-#define PID_TUNE_OVRRD	false					//If true, no AutoTune is performed an the PID gains are given in the below defines
-#define K_P_OVRRD		    203.72				//Kp hard set value
-#define K_I_OVRRD		    23967.57			//Ki hard set value
-#define K_D_OVRRD		    0.43					//Kd hard set value
+#define D_FILTER_N      300.0         //the derivative filter's cutoff (rad/sec)
+#define PID_FREQ_HZ     1000          //Sampling frequency of the PID loop
+#define PID_TUNE_OVRRD  false         //If true, no AutoTune is performed an the PID gains are given in the below defines
+#define K_P_OVRRD       203.72        //Kp hard set value
+#define K_I_OVRRD       23967.57      //Ki hard set value
+#define K_D_OVRRD       0.43          //Kd hard set value
 
 //Autotuner configuration:
-#define AUTOTUNER_SETPOINT		50				//(steps)
-#define AUTOTUNER_OUTPUT_STEP	12000			//output value - must be less than 16384 (INTERNAL_MAX_OUTPUT found in MyIntPID.h)
-#define AUTOTUNER_HYSTERESIS	10				//(steps)
+#define AUTOTUNER_SETPOINT    50      //(steps)
+#define AUTOTUNER_OUTPUT_STEP 12000   //output value - must be less than 16384 (INTERNAL_MAX_OUTPUT found in MyIntPID.h)
+#define AUTOTUNER_HYSTERESIS  10      //(steps)
 
 //IO pins:
-const int CH_A =          2;					//interrupt 0
-const int CH_B =          3;					//interrupt 1
-const int STEPS =         4;					//interrupt pc20
+const int CH_A =          2;          //interrupt 0
+const int CH_B =          3;          //interrupt 1
+const int STEPS =         4;          //interrupt pc20
 const int DIR =           5;
 const int ENABLE =        6;
-const int AUTOTUNE =	    7;
-const int MOTOR_OUT_A =   9;					//OC1A
-const int MOTOR_OUT_B =   10;					//OC1B
+const int AUTOTUNE =      7;
+const int MOTOR_OUT_A =   9;          //OC1A
+const int MOTOR_OUT_B =   10;         //OC1B
 const int ONBOARD_LED =	  13;
 
 
