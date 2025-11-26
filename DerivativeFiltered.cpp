@@ -4,7 +4,7 @@
 
 int32_t DerivativeFiltered::output(int32_t input){
 
-	_out = (coef1 * input) - ((coef2 * outputSum) >> 10);  //either outputSum has to be 64 bits, or the logic shift to happen first 
+	_out = (coef1 * input) - ((coef2 * outputSum) >> 10);
 	outputSum += _out;
 	return _out;
 }
