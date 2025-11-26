@@ -74,7 +74,7 @@ bool ArduinoPID::compute(){
 	if (!antiWindupNeeded()){
 		errorSum += error;
 	}
-	output += (iCoeff * errorSum) >> 10; //instead of doing /1000
+	output += (iCoeff * errorSum) >> 10; //instead of doing /1024
 	
 	//Writing output:
 	output = applyLimit(output);	
@@ -108,7 +108,7 @@ bool ArduinoPID::isStopped(){
 
 void ArduinoPID::setGains (double kp, double ki, double kd){
 	pCoeff = (int16_t) kp;
-	iCoeff = (int16_t) (ki * dtMs); //the / 1000 happens inside compute() so that we don't lose accuracy
+	iCoeff = (int16_t) (ki * dtMs * 1.024); //the / 1024 happens inside compute() so that we don't lose accuracy
 	dCoeff = (int16_t) (kd * 1000 / dtMs);
 	derFiltered.setParams(derivativeFilterN, kd, dtMs);
 }
