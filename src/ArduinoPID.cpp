@@ -10,9 +10,9 @@
 
 
 
-ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFilter):
+ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering):
 	frequencyHz(freqHz),
-	derivativeFiltering(derivFilter), 
+	derivativeFiltering(derivFiltering), 
 	configError(PARAMS_UNCONFIGURED)
 {
 	if (min >= max){
@@ -64,6 +64,8 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 
 void ArduinoPID::reset(){
 	derFiltered.reset();
+	lastMeasurement = 0;
+	integratorSum = 0;
 }	
 
 ConfigError ArduinoPID::getError(){

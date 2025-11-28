@@ -36,7 +36,7 @@ class DerivativeFiltered{
     void setParams(double _N, double _K, double _dtMs);
 
 	private:
-	int32_t _out;
+	int64_t output;
 	int64_t outputSum;
 	
 	int32_t coef1;

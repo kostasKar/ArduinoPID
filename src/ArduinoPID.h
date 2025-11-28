@@ -66,7 +66,7 @@ class ArduinoPID{
 	
 	public:
 
-	ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFilter = LOW_FILTERING);
+	ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering = LOW_FILTERING);
 	void setParameters(float kp, float ki, float kd);
 	int16_t compute(int16_t setpoint, int16_t measurement);
 	void reset();

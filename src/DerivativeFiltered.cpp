@@ -2,15 +2,29 @@
 #include "DerivativeFiltered.h"
 
 
+
+
+#define OUTPUT_MAX	(INT32_MAX)
+
+
+
+
 int32_t DerivativeFiltered::run(int32_t input){
 
-	_out = (coef1 * input) - ((coef2 * outputSum) >> 10);
-	outputSum += _out;
-	return _out;
+	output = (coef1 * input) - ((coef2 * outputSum) >> 10);
+
+	if (output > OUTPUT_MAX){
+		output = OUTPUT_MAX;
+	} else if (output < -OUTPUT_MAX){
+		output = -OUTPUT_MAX;
+	}
+
+	outputSum += output;
+	return int32_t(output);
 }
 
 int32_t DerivativeFiltered::getLastOutput(){
-	return _out;
+	return int32_t(output);
 }
 
 void DerivativeFiltered::reset(){
