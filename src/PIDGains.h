@@ -6,7 +6,6 @@ class PIDGains{
 
     public:
     float kp, ki, kd;
-    void set(float p, float i, float d);
     void saveToEEPROM(int startAddress = 0);
     bool readFromEEPROM(int startAddress = 0);
     

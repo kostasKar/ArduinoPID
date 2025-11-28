@@ -6,47 +6,41 @@
  */ 
 
 #include <Arduino.h>
-#include "AutoTune.h"
+#include "AutoTuner.h"
 #include <math.h> 
 
 
+AutoTuner::AutoTuner(int32_t setpoint, int32_t outputStep, int32_t hysteresis):
+	setpoint(setpoint),
+	outputStep(outputStep),
+	hysteresis(hysteresis)
+{
 
-
-void AutoTune::bindInputOutput(int32_t * in, int32_t * out){
-	inputPtr = in;
-	outputPtr = out;
-}
-
-AutoTune::AutoTune(int32_t setpoint, int32_t outputStep, int32_t hysteresis){
-	_setpoint = setpoint;
-	_outputStep = outputStep;
-	_hysteresis = hysteresis;
 }
 
 
-void AutoTune::init(){
-	peakCandidate.peakValue = _setpoint;
+void AutoTuner::init(){
+	peakCandidate.peakValue = setpoint;
 	peakCandidate.timePointUs = 0;
 	state = BELOW_SETPOINT;
 	maxIndex = 0;
 	minIndex = 0;
 	justStarted = true;
-	*outputPtr = _outputStep;
+	completed = false;
 }
 
-int AutoTune::execute(){
-
+int16_t AutoTuner::run(int16_t measurement){
+	int16_t output;
 	uint32_t now = micros();
-	
-	int32_t input = *inputPtr;
-	
+		
 	switch (state){
 		case BELOW_SETPOINT:
-		if (input < peakCandidate.peakValue){
-			peakCandidate.peakValue = input;
+		output = outputStep;
+		if (measurement < peakCandidate.peakValue){
+			peakCandidate.peakValue = measurement;
 			peakCandidate.timePointUs = now;
 		}
-		if (input > _setpoint + _hysteresis / 2) {
+		if (measurement > setpoint + hysteresis / 2) {
 			if (!justStarted){
 				mins[minIndex].peakValue = peakCandidate.peakValue;
 				mins[minIndex].timePointUs = peakCandidate.timePointUs;
@@ -54,49 +48,50 @@ int AutoTune::execute(){
 				minIndex++;
 			}
 			justStarted = false;
-			*outputPtr = -_outputStep;
+			output = -outputStep;
 			state = ABOVE_SETPOINT;
 		}
 		break;
 		
 		case ABOVE_SETPOINT:
-		if (input > peakCandidate.peakValue){
-			peakCandidate.peakValue = input;
+		output = -outputStep;
+		if (measurement > peakCandidate.peakValue){
+			peakCandidate.peakValue = measurement;
 			peakCandidate.timePointUs = now;
 		}
-		if (input < _setpoint - _hysteresis / 2){
+		if (measurement < setpoint - hysteresis / 2){
 			maxs[maxIndex].peakValue = peakCandidate.peakValue;
 			maxs[maxIndex].timePointUs = peakCandidate.timePointUs;
 			maxs[maxIndex].nextZeroCrossTimePointUs = now;
 			maxIndex++;
-			*outputPtr = _outputStep;
+			output = outputStep;
 			state = BELOW_SETPOINT;
 		}
 		break;
 	}
 
 	if (minIndex == NUMBER_OF_PEAKS){
-		*outputPtr = 0;
-		return 1;
-	} else {
-		return 0;
+		completed = true;
+		output = 0;
 	}
+
+	return output;
 }
 
 
-void AutoTune::analyzeMeasurements(){
+void AutoTuner::analyzeMeasurements(){
 	
 	double averagePeriod = 0;
 	double averageAmplitude = 0;
 	
 	Serial.println(F("Autotuning data:"));
 	Serial.print(F("Input setpoint: "));
-	Serial.println(_setpoint);
+	Serial.println(setpoint);
 	Serial.print(F("Output step (d): "));
-	Serial.print(_outputStep);
+	Serial.print(outputStep);
 	Serial.println(F(" (max output: 16384)"));
 	Serial.print(F("hysteresis: "));
-	Serial.println(_hysteresis);
+	Serial.println(hysteresis);
 
 	for (int i = NUMBER_OF_PEAKS - 1; i > 0; i--){
 		uint32_t maxPeriod = maxs[i].timePointUs - maxs[i-1].timePointUs;
@@ -130,7 +125,7 @@ void AutoTune::analyzeMeasurements(){
 	
 	double Pu = averagePeriod / 1000000; //in sec
 	//double Ku = (4.0 * (_outputStep)) / (3.1415 * averageAmplitude);
-	double Ku = (4.0 * (_outputStep)) / (M_PI * sqrt(square(averageAmplitude) - square(_hysteresis)));
+	double Ku = (4.0 * (outputStep)) / (M_PI * sqrt(square(averageAmplitude) - square(hysteresis)));
 	
 	Kp = 0.6 * Ku;
 	Ki = 1.2 * Ku / (Pu);
@@ -145,14 +140,14 @@ void AutoTune::analyzeMeasurements(){
 	
 }
 
-double AutoTune::getKp(){
-	return Kp;
-}
+bool AutoTuner::isFinished(){
+	return completed;
+}	
 
-double AutoTune::getKi(){
-	return Ki;
-}
-
-double AutoTune::getKd(){
-	return Kd;
+PIDGains AutoTuner::getPIDGains(){
+	PIDGains gains;
+	gains.kp = Kp;
+	gains.ki = Ki;
+	gains.kd = Kd;
+	return gains;
 }
