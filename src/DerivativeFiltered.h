@@ -33,7 +33,7 @@ class DerivativeFiltered{
 
 	void reset();
 
-    void setParams(double _N, double _K, double _dtMs);
+    void setParams(double cutoffRadPerSec, double Gain, double freqHz);
 
 	private:
 	int64_t output;

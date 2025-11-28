@@ -48,13 +48,13 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 		case NO_FILTERING:
 			break;
 		case LOW_FILTERING:
-			derFilter.setParams(1.88 * frequencyHz, kd, 1000.0 / frequencyHz);
+			derFilter.setParams(1.88 * frequencyHz, kd, frequencyHz);
 			break;
 		case MEDIUM_FILTERING:
-			derFilter.setParams(0.63 * frequencyHz, kd, 1000.0 / frequencyHz);
+			derFilter.setParams(0.63 * frequencyHz, kd, frequencyHz);
 			break;
 		case HIGH_FILTERING:
-			derFilter.setParams(0.19 * frequencyHz, kd, 1000.0 / frequencyHz);
+			derFilter.setParams(0.19 * frequencyHz, kd, frequencyHz);
 			break;
 	}
 

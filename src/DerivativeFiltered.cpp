@@ -32,10 +32,10 @@ void DerivativeFiltered::reset(){
 }
 
 
-void DerivativeFiltered::setParams(double _N, double _K, double _dtMs){
+void DerivativeFiltered::setParams(double cutoffRadPerSec, double Gain, double freqHz){
   outputSum = 0;
   
-  coef1 = (int32_t) (_K * _N);
-  coef2 = (int32_t) (_N * _dtMs);
+  coef1 = (int32_t) (Gain * cutoffRadPerSec);
+  coef2 = (int32_t) (cutoffRadPerSec * 1024.0 / freqHz);
 }
 
