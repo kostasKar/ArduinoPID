@@ -12,6 +12,7 @@
 #include <inttypes.h>
 #include "Arduino.h"
 #include "DerivativeFiltered.h"
+#include "PIDGains.h"
 
 
 /*
@@ -68,6 +69,7 @@ class ArduinoPID{
 
 	ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering = LOW_FILTERING);
 	void setParameters(float kp, float ki, float kd);
+	void setParameters(PIDGains gains);
 	int16_t compute(int16_t setpoint, int16_t measurement);
 	void reset();
 	ConfigError getError();

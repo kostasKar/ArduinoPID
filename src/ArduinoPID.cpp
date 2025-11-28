@@ -23,6 +23,10 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
 
 }
 
+void ArduinoPID::setParameters(PIDGains gains){
+	setParameters(gains.kp, gains.ki, gains.kd);
+}
+
 void ArduinoPID::setParameters(float kp, float ki, float kd){
 	
 	if (kp < 0 || kp > PARAM_MAX){
