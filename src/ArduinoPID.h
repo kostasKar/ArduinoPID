@@ -75,10 +75,10 @@ class ArduinoPID{
 	private:
 
 	float frequencyHz;
-	ConfigError configError;
 	DerivativeFiltering derivativeFiltering;
+	ConfigError configError;
 	int64_t minOutput, maxOutput;
-	DerivativeFiltered derFiltered;
+	DerivativeFiltered derFilter;
 	uint32_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
 	int64_t integratorSum;

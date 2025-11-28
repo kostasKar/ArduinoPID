@@ -48,13 +48,13 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 		case NO_FILTERING:
 			break;
 		case LOW_FILTERING:
-			derFiltered.setParams(1.88 * frequencyHz, kd, 1000.0 / frequencyHz);
+			derFilter.setParams(1.88 * frequencyHz, kd, 1000.0 / frequencyHz);
 			break;
 		case MEDIUM_FILTERING:
-			derFiltered.setParams(0.63 * frequencyHz, kd, 1000.0 / frequencyHz);
+			derFilter.setParams(0.63 * frequencyHz, kd, 1000.0 / frequencyHz);
 			break;
 		case HIGH_FILTERING:
-			derFiltered.setParams(0.19 * frequencyHz, kd, 1000.0 / frequencyHz);
+			derFilter.setParams(0.19 * frequencyHz, kd, 1000.0 / frequencyHz);
 			break;
 	}
 
@@ -63,7 +63,7 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 }
 
 void ArduinoPID::reset(){
-	derFiltered.reset();
+	derFilter.reset();
 	lastMeasurement = 0;
 	integratorSum = 0;
 }	
@@ -103,7 +103,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 			}
 			dTerm = - int32_t(dGain) * deriv;
 		} else {
-			dTerm = - derFiltered.run(measurement);
+			dTerm = - derFilter.run(measurement);
 		}
 	}
 
