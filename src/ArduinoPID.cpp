@@ -8,237 +8,121 @@
 #include "ArduinoPID.h"
 #include <util/atomic.h>
 
-ArduinoPID::ArduinoPID(voidWriteInt32PtrType  outPtr, double derivativeFilterCutoff, uint16_t frequencyHz, int32_t min, int32_t max, AutoTune * tuner):
-	minOutput(min),
-	outputRange(max - min),
-	outputPtr(outPtr),
-	derivativeFilterN(derivativeFilterCutoff),
-	autoTuner(tuner),
-	stopped(true)
-	
+
+
+ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFilter):
+	frequencyHz(freqHz),
+	derivativeFiltering(derivFilter), 
+	configError(PARAMS_UNCONFIGURED)
 {
-	dtMs = 1000.0 / frequencyHz;
-	dtMicros = (uint32_t) (dtMs * 1000);
-	reset();		
+	if (min >= max){
+		configError = OUTPUT_BOUNDS_INVALID;
+	}
+	minOutput = int64_t(min) * PARAM_MULT;
+	maxOutput = int64_t(max) * PARAM_MULT;
+
 }
 
-void ArduinoPID::autoSetGains(){
-	if (! readAutoTunerGainsFromEEPROM()){
-		autoTune();
-	}
-}
-
-bool ArduinoPID::computeInLoop(){
-	uint32_t now = micros();
-	if (now - previousExecutionTime >= dtMicros){
-		previousExecutionTime = now;
-		return compute();		
-	}
-	return false;
-}
-
-bool ArduinoPID::compute(){
-
-	if (stopped){
-		return false;
-	}
+void ArduinoPID::setParameters(float kp, float ki, float kd){
 	
-	//ATOMIC access and local copy of measurement and setpoint:
-	cli();
-	int32_t tempMeasurement = measurement;
-	int32_t tempSetpoint = setpoint;
-	sei();
-	error = (tempSetpoint - tempMeasurement);
-	
-	//Calculating Proportional term:
-	int32_t output = pCoeff * error;
-
-	//Calculating Derivative term:
-	#if DERIVATIVE_ON_MEASUREMENT 
-		#if FILTERED_DERIVATIVE
-			output -=  derFiltered.output(tempMeasurement);
-		#else
-			output -=  dCoeff * (tempMeasurement - lastMeasurement);
-			lastMeasurement = tempMeasurement;
-		#endif
-	#else
-		#if FILTERED_DERIVATIVE
-			output += derFiltered.output(error);
-		#else
-			output += dCoeff * (error - lastError);
-			lastError = error;
-		#endif
-	#endif
-
-	//Calculating Integral term:
-	if (!antiWindupNeeded()){
-		errorSum += error;
+	if (kp < 0 || kp > PARAM_MAX){
+		configError = KP_OUT_OF_RANGE;
+		return;
 	}
-	output += (iCoeff * errorSum) >> 10; //instead of doing /1024
-	
-	//Writing output:
-	output = applyLimit(output);	
-	writeOutput(scaleToRange(output));
 
-	return true;
+	if (ki < 0 || ki > PARAM_MAX){
+		configError = KI_OUT_OF_RANGE;
+		return;
+	}
+
+	if (kd < 0 || kd > PARAM_MAX){
+		configError = KD_OUT_OF_RANGE;
+		return;
+	}
+
+	pGain = (uint32_t)(kp * PARAM_MULT);
+	iGain = (uint32_t)((ki / frequencyHz) * PARAM_MULT);
+	dGain = (uint32_t)((kd * frequencyHz) * PARAM_MULT);
+
+	switch (derivativeFiltering){
+		case NO_FILTERING:
+			break;
+		case LOW_FILTERING:
+			derFiltered.setParams(1.88 * frequencyHz, kd, 1000.0 / frequencyHz);
+			break;
+		case MEDIUM_FILTERING:
+			derFiltered.setParams(0.63 * frequencyHz, kd, 1000.0 / frequencyHz);
+			break;
+		case HIGH_FILTERING:
+			derFiltered.setParams(0.19 * frequencyHz, kd, 1000.0 / frequencyHz);
+			break;
+	}
+
+	configError = NO_ERROR;
+
 }
-
 
 void ArduinoPID::reset(){
-	setpoint = 0;
-	measurement = 0;
-	lastError = 0;
-	lastMeasurement = 0;
-	errorSum = 0;
-	writeOutput(scaleToRange(0));
 	derFiltered.reset();
+}	
+
+ConfigError ArduinoPID::getError(){
+	return configError;
 }
 
-void ArduinoPID::stop(){
-	stopped = true;
-}
-
-void ArduinoPID::start(){
-	stopped = false;
-}
-
-bool ArduinoPID::isStopped(){
-	return stopped;
-}
-
-void ArduinoPID::setGains (double kp, double ki, double kd){
-	pCoeff = (int16_t) kp;
-	iCoeff = (int16_t) (ki * dtMs * 1.024); //the / 1024 happens inside compute() so that we don't lose accuracy
-	dCoeff = (int16_t) (kd * 1000 / dtMs);
-	derFiltered.setParams(derivativeFilterN, kd, dtMs);
-}
-
-
-void ArduinoPID::autoTune(){
+int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	
-	if (!autoTuner){return;}
+	int32_t pTerm = 0, iTerm = 0, dTerm = 0;
+	int32_t err = int32_t(setpoint) - int32_t(measurement);
+	int64_t output;
 
-	bool wasOn = !isStopped();
-	stop();
-	
-	autoTuner->bindInputOutput(&autoTuneInput, &autoTuneOutput);
+	//Calculating Proportional term:
+	pTerm = int32_t(pGain) * err;
 
-	int completed = 0;
-	autoTuner->init();
-	
-	while (!completed){
-		ATOMIC_BLOCK(ATOMIC_FORCEON) {autoTuneInput = measurement;}
-		completed = autoTuner->execute();
-		writeOutput(scaleToRange(autoTuneOutput));
+	//Calculating Integral term:
+	integratorSum += int64_t(iGain) * int64_t(err);
+	if (integratorSum > INTEG_MAX){
+		integratorSum = INTEG_MAX;
+	} else if (integratorSum < INTEG_MIN){
+		integratorSum = INTEG_MIN;
 	}
-	autoTuner->analyzeMeasurements();
-	
-	setGains(autoTuner->getKp(), autoTuner->getKi(), autoTuner->getKd());
-	
-	writeAutoTunerGainsToEEPROM();
 
-	if (wasOn){
-		start();
-	}
-	
-}
+	iTerm = integratorSum;
 
-
-void ArduinoPID::setSetpoint(int32_t s){
-	setpoint = s;
-}
-
-void ArduinoPID::setMeasurement(int32_t m) {
-	measurement = m;
-}
-
-int32_t ArduinoPID::getSetpoint(){
-	cli();
-	int32_t temp = setpoint;
-	sei();
-	return temp;
-}
-
-int32_t ArduinoPID::getMeasurement(){
-	cli();
-	int32_t temp = measurement;
-	sei();
-	return temp;
-}
-
-void ArduinoPID::incrementSetpoint (int8_t s){
-	setpoint += s;
-}
-
-void ArduinoPID::incrementMeasurement (int8_t m){
-	measurement += m;
-}
-
-bool ArduinoPID::isSpotOn(){
-	return (error == 0);
-}
-
-bool ArduinoPID::isSteady(){
-	return ((error == 0) && (derFiltered.getLastOutput() == 0));
-}
-
-
-bool ArduinoPID::antiWindupNeeded(){
-	return ((internalOutputMAXed && (error > 0)) || (internalOutputMINed && (error < 0)));
-}
-
-int32_t ArduinoPID::applyLimit(int32_t value){
-	
-	if (value > INTERNAL_MAX_OUTPUT){
-		internalOutputMAXed = true;
-		internalOutputMINed = false;
-		return INTERNAL_MAX_OUTPUT;
-	} else if (value < -INTERNAL_MAX_OUTPUT){
-		internalOutputMAXed = false;
-		internalOutputMINed = true;
-		return -INTERNAL_MAX_OUTPUT;
-	} else {
-		internalOutputMAXed = false;
-		internalOutputMINed = false;
-		return value;
-	}
-}
-
-
-int32_t ArduinoPID::scaleToRange (int32_t value){
-	return ((outputRange * (value + INTERNAL_MAX_OUTPUT)) >> (INTERNAL_MAX_OUTPUT_BITS + 1)) + minOutput;
-}
-
-void ArduinoPID::writeOutput(int32_t calculatedOutput) {outputPtr(calculatedOutput);}
-
-void ArduinoPID::writeAutoTunerGainsToEEPROM(){
-	double gains[3];
-	gains[0] = autoTuner->getKp();
-	gains[1] = autoTuner->getKi();
-	gains[2] = autoTuner->getKd();
-	EEPROM.put(4, gains);
-	int crc = calcrc((char *)gains, sizeof(gains));
-	EEPROM.put(0, crc);
-}
-
-bool ArduinoPID::readAutoTunerGainsFromEEPROM(){
-	
-	double gains[3];
-	int savedCrc, calculatedCrc;
-	
-	EEPROM.get(4, gains);
-	EEPROM.get(0, savedCrc);
-	calculatedCrc = calcrc((char *)gains, sizeof(gains));
-	
-	if (calculatedCrc != savedCrc) {
-		Serial.println("Invalid gains in EEPROM.");
-		return false;
+	//Calculating Derivative term:
+	if (dGain != 0){
+		if (derivativeFiltering == NO_FILTERING){
+			int32_t deriv = int32_t(measurement) - int32_t(lastMeasurement);
+			lastMeasurement = measurement;
+			if (deriv > DERIV_MAX){
+				deriv = DERIV_MAX;
+			} else if (deriv < DERIV_MIN){
+				deriv = DERIV_MIN;
+			}
+			dTerm = - int32_t(dGain) * deriv;
 		} else {
-		setGains(gains[0], gains[1], gains[2]);
-		Serial.println("Read gains from EEPROM:");
-		Serial.println(gains[0]);
-		Serial.println(gains[1]);
-		Serial.println(gains[2]);
-		return true;
+			dTerm = - derFiltered.run(measurement);
+		}
 	}
+
+
+	//Summing all terms and applying output limits:
+	output = int64_t(pTerm) + int64_t(iTerm) + int64_t(dTerm);
+	
+	if(output > maxOutput){
+		output = maxOutput;
+	} else if (output < minOutput){
+		output = minOutput;
+	}
+
+	// Remove the integer scaling factor. 
+	int16_t rval = output >> PARAM_SHIFT;
+
+	// Fair rounding.
+	if (output & (0x1ULL << (PARAM_SHIFT - 1))) {
+		rval++;
+	}
+
+	return rval;
+
 }

@@ -28,7 +28,7 @@
 class DerivativeFiltered{
 
 	public:
-	int32_t output(int32_t input);
+	int32_t run(int32_t input);
 	int32_t getLastOutput(); //without recalculating it and thus without affecting the integrator state
 
 	void reset();

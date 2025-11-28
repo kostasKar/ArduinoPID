@@ -2,7 +2,7 @@
 #include "DerivativeFiltered.h"
 
 
-int32_t DerivativeFiltered::output(int32_t input){
+int32_t DerivativeFiltered::run(int32_t input){
 
 	_out = (coef1 * input) - ((coef2 * outputSum) >> 10);
 	outputSum += _out;
