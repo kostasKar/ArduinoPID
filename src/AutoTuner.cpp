@@ -32,6 +32,10 @@ void AutoTuner::init(){
 int16_t AutoTuner::run(int16_t measurement){
 	int16_t output;
 	uint32_t now = micros();
+
+	if (completed){
+		return 0;
+	}
 		
 	switch (state){
 		case BELOW_SETPOINT:
@@ -73,6 +77,7 @@ int16_t AutoTuner::run(int16_t measurement){
 	if (minIndex == NUMBER_OF_PEAKS){
 		completed = true;
 		output = 0;
+		analyzeMeasurements();
 	}
 
 	return output;

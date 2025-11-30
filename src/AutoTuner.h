@@ -12,7 +12,7 @@
 enum AutotunerStates {
 	BELOW_SETPOINT,
 	ABOVE_SETPOINT
-} States;
+};
 
 
 struct Peak{
@@ -35,7 +35,6 @@ class AutoTuner {
 	void init();
 	int16_t run(int16_t measurement);
 	bool isFinished();
-	void analyzeMeasurements();
 	PIDGains getPIDGains();
 
 	private:

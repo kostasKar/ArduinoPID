@@ -13,7 +13,7 @@
 
 int32_t DerivativeFiltered::run(int32_t input){
 
-	output = (int64_t(coef1) * int64_t(input)) - ((int64_t(coef2) * int64_t(outputSum) >> SCALING_BITS);
+	output = (int64_t(coef1) * int64_t(input)) - (int64_t(coef2) * int64_t(outputSum) >> SCALING_BITS);
 
 	if (output > OUTPUT_MAX){
 		output = OUTPUT_MAX;

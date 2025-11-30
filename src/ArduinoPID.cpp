@@ -62,7 +62,9 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 			break;
 	}
 
-	configError = NO_ERROR;
+	if (configError == PARAMS_UNCONFIGURED){
+		configError = NO_ERROR;
+	}
 
 }
 
@@ -77,6 +79,10 @@ ConfigError ArduinoPID::getError(){
 }
 
 int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
+
+    if (configError != NO_ERROR){
+        return 0;
+    }
 	
 	int32_t pTerm = 0, iTerm = 0, dTerm = 0;
 	int32_t err = int32_t(setpoint) - int32_t(measurement);
