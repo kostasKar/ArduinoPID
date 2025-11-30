@@ -85,7 +85,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
         return 0;
     }
 	
-	int32_t err = int32_t(setpoint) - int32_t(measurement);
+	int32_t err =  (int32_t)((int16_t)(setpoint - measurement));
 	int64_t output = 0;
 
 	//Calculating Proportional term:
@@ -100,7 +100,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	//Calculating Derivative term:
 	if (dGain != 0){
 		if (derivativeFiltering == NO_FILTERING){
-			int32_t deriv = int32_t(measurement) - int32_t(lastMeasurement);
+			int32_t deriv = (int32_t)((int16_t)(measurement  - lastMeasurement));
 			lastMeasurement = measurement;
 			if (deriv > DERIV_MAX){
 				deriv = DERIV_MAX;
