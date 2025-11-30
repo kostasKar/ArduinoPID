@@ -92,15 +92,9 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	pTerm = int32_t(pGain) * err;
 
 	//Calculating Integral with anti-windup clamping 
-    if (!(outputMaxed && (err > 0)) && !(outputMined && (err < 0))){ {
+    if (!(outputMaxed && err > 0 || outputMined && err < 0)){ {
         integratorSum += int64_t(iGain) * int64_t(err);
-        if (integratorSum > INTEG_MAX){
-            integratorSum = INTEG_MAX;
-        } else if (integratorSum < INTEG_MIN){
-            integratorSum = INTEG_MIN;
-        }
     }
-
 	iTerm = integratorSum;
 
 	//Calculating Derivative term:
