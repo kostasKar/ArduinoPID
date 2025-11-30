@@ -91,13 +91,15 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	//Calculating Proportional term:
 	pTerm = int32_t(pGain) * err;
 
-	//Calculating Integral term:
-	integratorSum += int64_t(iGain) * int64_t(err);
-	if (integratorSum > INTEG_MAX){
-		integratorSum = INTEG_MAX;
-	} else if (integratorSum < INTEG_MIN){
-		integratorSum = INTEG_MIN;
-	}
+	//Calculating Integral with anti-windup clamping 
+    if (!(outputMaxed && (err > 0)) && !(outputMined && (err < 0))){ {
+        integratorSum += int64_t(iGain) * int64_t(err);
+        if (integratorSum > INTEG_MAX){
+            integratorSum = INTEG_MAX;
+        } else if (integratorSum < INTEG_MIN){
+            integratorSum = INTEG_MIN;
+        }
+    }
 
 	iTerm = integratorSum;
 
@@ -123,14 +125,17 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	
 	if(output > maxOutput){
 		output = maxOutput;
+        outputMaxed = true;
 	} else if (output < minOutput){
 		output = minOutput;
-	}
+        outputMined = true;
+	} else {
+        outputMaxed = false;
+        outputMined = false;
+    }
 
-	// Remove the integer scaling factor. 
+	// Remove the integer scaling factor and apply fair rounding
 	int16_t rval = output >> PARAM_SHIFT;
-
-	// Fair rounding.
 	if (output & (0x1ULL << (PARAM_SHIFT - 1))) {
 		rval++;
 	}

@@ -80,6 +80,7 @@ class ArduinoPID{
 	DerivativeFiltering derivativeFiltering;
 	ConfigError configError;
 	int64_t minOutput, maxOutput;
+	bool outputMaxed, outputMined;
 	DerivativeFiltered derFilter;
 	uint32_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
