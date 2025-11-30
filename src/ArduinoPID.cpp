@@ -20,7 +20,8 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
 	}
 	minOutput = int64_t(min) * PARAM_MULT;
 	maxOutput = int64_t(max) * PARAM_MULT;
-
+    outputMaxed = false;
+    outputMined = false;
 }
 
 void ArduinoPID::setParameters(PIDGains gains){
