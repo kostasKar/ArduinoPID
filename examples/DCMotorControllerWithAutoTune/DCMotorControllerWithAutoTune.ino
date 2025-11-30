@@ -13,8 +13,7 @@
  *  Kostas Karouzos 2020 
  * 
  *  PID position control of DC motor 
- *  The motor is driven using an H-bridgr as the DRV8871, with two signals (CW, CCW) used in Sign-Magnitude or Anti-phase lock mode.
- *  Driving mode can be configured by the ANTIPHASE_LOCK parameter. The frequency of the PWM signals is also configured
+ *  The motor is driven using an H-bridgr as the DRV8871, with two signals (CW, CCW) used in Sign-Magnitude mode.
  *  
  *  As feedback from the motor, a quadrature optical encoder should be used
  *  The two encoder channels, A and B of the encoder are driven to the external interrupts 0 and 1 of the processor
@@ -25,10 +24,10 @@
  *  The PID loop frequency, as well as the derivative filter cutoff frequency can be configured.
  *  The gains of the PID controller can be either autotuned or manually set.
  *  The autotuner performs the auto-tuning relay method with the configured parameters. 
- *  The auto tuned gains are held in EEPROM. If there are no or invalid gains in EEPROM, autotuning is fired during startup
- *  Otherwise, Autotuning can be performed by pressing the correspoding button.
+ *  The auto tuned gains are held in EEPROM. If there are no or invalid gains in EEPROM, the controller does not run.
+ *  Autotuning can be performed by pressing the correspoding button.
  *  
- *  During operation, the onboard LED is on when the controller is in steady state
+ *  During operation, the onboard LED is on when the controller is within configurable limits from the setpoint.
  *  Additionally to the STEPS/DIR interface, the setpoint can be set by sending an integer (position setpoint in steps units) through Serial
  *  
  */
@@ -49,10 +48,10 @@
 
 //Autotuner configuration:
 #define AUTOTUNER_SETPOINT    50      //(steps)
-#define AUTOTUNER_OUTPUT_STEP ((int32_t)0.75 * TIMER_TOP)
+#define AUTOTUNER_OUTPUT_STEP ((int32_t)(0.75 * TIMER_TOP))
 #define AUTOTUNER_HYSTERESIS  10      //(steps)
 
-//Spot on indication threshold
+//Spot-on indication threshold
 #define SPOT_ON_THRESHOLD 5       //(steps)
 
 //IO pins:
@@ -87,18 +86,28 @@ ArduinoPID pid(PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, MEDIUM_FILTERING);
  *---------------------------------------------------------------------
  */
 ISR(INT0_vect) {
-
-  positionMeasurement += (FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()) ?  1 : -1;
+  if(FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()){
+    positionMeasurement++;
+  } else {
+    positionMeasurement--;
+  }
 }
 
 ISR(INT1_vect) {
-  positionMeasurement += (FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()) ? -1 : 1;
+  if(FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()){
+    positionMeasurement--;
+  } else {
+    positionMeasurement++;
+  }
 }
 
-//TODO maybe use one of INT0 or INT1 for this so that we can have it triggered only on rising edge and ommit the if statement
 ISR(PCINT2_vect) {
   if (FastGPIO::Pin<STEPS>::isInputHigh()){
-	 positionSetpoint += (FastGPIO::Pin<DIR>::isInputHigh() ^ DIR_INPUT_INV) ? 1 : -1;
+	 if(FastGPIO::Pin<DIR>::isInputHigh() ^ DIR_INPUT_INV){
+        positionSetpoint++;
+     } else{
+        positionSetpoint--;
+     }  
   }
 }
 
