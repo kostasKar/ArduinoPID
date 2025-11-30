@@ -11,7 +11,7 @@
 //The TF of a single pole filter with cutoff angular velocity N rad/s is N / (s + N)
 //A filter with a derivative in cascade give a TF of sN / (s + N)
 //The same can be obtained by using a negative feedback loop with a single gain N on the direct path, and a simple integrator on the feedback path
-//See video https://www.mathworks.com/videos/understanding-pid-control-part-2-expanding-beyond-a-simple-integral-1528310418260.html
+//See video https://www.mathworks.com/videos/understanding-pid-control-part-3-expanding-beyond-a-simple-derivative-1531120808026.html
 //Also, since the derivative is going to be multiplied by the gain Kp, we are embedding it into two coefs, so that we save operations
 //Important Note!: The cotoff  frequency N should be chosen less than the sampling frequency 1/dt. Or else oscillations will appear 
 

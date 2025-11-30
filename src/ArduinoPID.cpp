@@ -85,7 +85,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
     }
 	
 	int32_t err = int32_t(setpoint) - int32_t(measurement);
-	int64_t output;
+	int64_t output = 0;
 
 	//Calculating Proportional term:
 	output += int64_t(pGain) * err;
