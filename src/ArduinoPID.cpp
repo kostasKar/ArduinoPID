@@ -91,7 +91,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	output += int64_t(pGain) * err;
 
 	//Calculating Integral with anti-windup clamping 
-    if (!(outputMaxed && err > 0 || outputMined && err < 0)){ {
+    if (!((outputMaxed && err > 0) || (outputMined && err < 0))){
         integratorSum += int64_t(iGain) * int64_t(err);
     }
 	output += integratorSum;
@@ -130,5 +130,4 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	}
 
 	return rval;
-
 }
