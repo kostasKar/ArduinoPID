@@ -84,18 +84,17 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
         return 0;
     }
 	
-	int32_t pTerm = 0, iTerm = 0, dTerm = 0;
 	int32_t err = int32_t(setpoint) - int32_t(measurement);
 	int64_t output;
 
 	//Calculating Proportional term:
-	pTerm = int32_t(pGain) * err;
+	output += int64_t(pGain) * err;
 
 	//Calculating Integral with anti-windup clamping 
     if (!(outputMaxed && err > 0 || outputMined && err < 0)){ {
         integratorSum += int64_t(iGain) * int64_t(err);
     }
-	iTerm = integratorSum;
+	output += integratorSum;
 
 	//Calculating Derivative term:
 	if (dGain != 0){
@@ -107,15 +106,11 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 			} else if (deriv < DERIV_MIN){
 				deriv = DERIV_MIN;
 			}
-			dTerm = - int32_t(dGain) * deriv;
+			output -= int32_t(dGain) * deriv;
 		} else {
-			dTerm = - derFilter.run(measurement);
+			output -= derFilter.run(measurement);
 		}
 	}
-
-
-	//Summing all terms and applying output limits:
-	output = int64_t(pTerm) + int64_t(iTerm) + int64_t(dTerm);
 	
 	if(output > maxOutput){
 		output = maxOutput;
