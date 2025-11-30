@@ -213,8 +213,7 @@ void performAutoTune(){
     autoTuner.init();
     while (!autoTuner.isFinished()){
         ATOMIC_BLOCK(ATOMIC_FORCEON){ measurement = positionMeasurement; }
-        int16_t output = autoTuner.run(measurement);
-        setMotorSpeed(output);
+        setMotorSpeed(autoTuner.run(measurement));
     }   
 
     pidGains = autoTuner.getPIDGains();

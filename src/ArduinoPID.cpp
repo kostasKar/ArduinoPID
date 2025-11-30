@@ -62,7 +62,7 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 			break;
 	}
 
-	if (configError == PARAMS_UNCONFIGURED){
+	if (configError < OUTPUT_BOUNDS_INVALID){
 		configError = NO_ERROR;
 	}
 
