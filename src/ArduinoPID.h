@@ -67,7 +67,7 @@ class ArduinoPID{
 	ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering = LOW_FILTERING);
 	void setParameters(float kp, float ki, float kd);
 	void setParameters(PIDGains gains);
-	int16_t compute(int32_t setpoint, int32_t measurement);
+	int16_t compute(int16_t setpoint, int16_t measurement);
 	void reset();
 	ConfigError getError();
 	
@@ -80,7 +80,7 @@ class ArduinoPID{
 	bool outputMaxed, outputMined;
 	DerivativeFiltered derFilter;
 	uint32_t pGain, iGain, dGain;
-	int32_t lastMeasurement;
+	int16_t lastMeasurement;
 	int64_t integratorSum;
 	};
 
