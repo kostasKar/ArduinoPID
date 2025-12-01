@@ -14,7 +14,7 @@ class FirstOrderIIRFilter{
     void reset();
     
     private:
-    int64_t output;
+    int32_t output;
     int32_t aCoefficient;
     int32_t bCoefficient;
     
