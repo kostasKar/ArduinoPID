@@ -80,7 +80,7 @@ class ArduinoPID{
 	int64_t minOutput, maxOutput;
 	bool outputMaxed, outputMined;
 	FirstOrderIIRFilter filter;
-	uint32_t pGain, iGain, dGain;
+	int32_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
 	int64_t integratorSum;
 	};
