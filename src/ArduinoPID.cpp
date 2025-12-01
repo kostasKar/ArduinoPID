@@ -53,13 +53,13 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 		case NO_FILTERING:
 			break;
 		case LOW_FILTERING:
-			derFilter.setParams(0.80 * frequencyHz, kd, frequencyHz);
+			filter.setParams(kd * frequencyHz, 0.80 * frequencyHz, frequencyHz);
 			break;
 		case MEDIUM_FILTERING:
-			derFilter.setParams(0.63 * frequencyHz, kd, frequencyHz);
+			filter.setParams(kd * frequencyHz, 0.60 * frequencyHz, frequencyHz);
 			break;
 		case HIGH_FILTERING:
-			derFilter.setParams(0.19 * frequencyHz, kd, frequencyHz);
+			filter.setParams(kd * frequencyHz, 0.20 * frequencyHz, frequencyHz);
 			break;
 	}
 
@@ -70,7 +70,7 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 }
 
 void ArduinoPID::reset(){
-	derFilter.reset();
+	filter.reset();
 	lastMeasurement = 0;
 	integratorSum = 0;
 }	
@@ -85,7 +85,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
         return 0;
     }
 	
-    //wrap safe subtraction to avoid issues with int16_t overflow
+    //wrap-safe subtraction to avoid issues with int16_t overflow
 	int32_t err =  (int32_t)(uint16_t(setpoint) - uint16_t(measurement));
 	int64_t output = 0;
 
@@ -100,26 +100,25 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 
 	//Calculating Derivative term:
 	if (dGain != 0){
+        int32_t measurementDiff = (int32_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
+        lastMeasurement = measurement;
+        if (measurementDiff > DERIV_MAX) measurementDiff = DERIV_MAX;
+		else if (measurementDiff < DERIV_MIN) measurementDiff = DERIV_MIN;
 		if (derivativeFiltering == NO_FILTERING){
-			int32_t deriv = (int32_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
-			lastMeasurement = measurement;
-			if (deriv > DERIV_MAX){
-				deriv = DERIV_MAX;
-			} else if (deriv < DERIV_MIN){
-				deriv = DERIV_MIN;
-			}
-			output -= int32_t(dGain) * deriv;
+			output -= int32_t(dGain) * measurementDiff;
 		} else {
-			output -= derFilter.run(measurement);
+			output -= filter.run(measurementDiff);
 		}
 	}
 	
 	if(output > maxOutput){
 		output = maxOutput;
         outputMaxed = true;
+        outputMined = false;
 	} else if (output < minOutput){
 		output = minOutput;
         outputMined = true;
+        outputMaxed = false;
 	} else {
         outputMaxed = false;
         outputMined = false;

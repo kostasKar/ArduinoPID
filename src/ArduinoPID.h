@@ -12,6 +12,7 @@
 #include <inttypes.h>
 #include "Arduino.h"
 #include "DerivativeFiltered.h"
+#include "FirstOrderIIRFilter.h"
 #include "PIDGains.h"
 
 
@@ -78,7 +79,7 @@ class ArduinoPID{
 	ConfigError configError;
 	int64_t minOutput, maxOutput;
 	bool outputMaxed, outputMined;
-	DerivativeFiltered derFilter;
+	FirstOrderIIRFilter filter;
 	uint32_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
 	int64_t integratorSum;
