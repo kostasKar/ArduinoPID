@@ -35,12 +35,12 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 		return;
 	}
 
-	if (ki < 0 || ki > PARAM_MAX){
+	if (ki < 0 || (ki  / frequencyHz) > PARAM_MAX){
 		configError = KI_OUT_OF_RANGE;
 		return;
 	}
 
-	if (kd < 0 || kd > PARAM_MAX){
+	if (kd < 0 || (kd * frequencyHz) > PARAM_MAX){
 		configError = KD_OUT_OF_RANGE;
 		return;
 	}
