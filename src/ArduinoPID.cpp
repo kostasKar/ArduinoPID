@@ -45,9 +45,9 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 		return;
 	}
 
-	pGain = (int32_t)(kp * PARAM_MULT);
-	iGain = (int32_t)((ki / frequencyHz) * PARAM_MULT);
-	dGain = (int32_t)((kd * frequencyHz) * PARAM_MULT);
+	pGain = (uint32_t)(kp * PARAM_MULT);
+	iGain = (uint32_t)((ki / frequencyHz) * PARAM_MULT);
+	dGain = (uint32_t)((kd * frequencyHz) * PARAM_MULT);
 
 	switch (derivativeFiltering){
 		case NO_FILTERING:
@@ -64,10 +64,9 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 	}
 
     //Anti-windup gain:
-    if (ki / frequencyHz / kp  > PARAM_MAX){
+    awGain = (ki / kp) * PARAM_MULT;
+    if (awGain > PARAM_MAX){
         awGain = iGain;
-    } else {
-        awGain = (int32_t)(ki / frequencyHz / kp * PARAM_MULT);
     }
 
 	if (configError < OUTPUT_BOUNDS_INVALID){
@@ -123,8 +122,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	} else if (output < minOutput){
         integratorSum += awGain * int32_t(minOutput - output);
 		output = minOutput;
-    }
-    
+
 	// Remove the integer scaling factor and apply fair rounding
 	int16_t rval = output >> PARAM_SHIFT;
 	if (output & (0x1ULL << (PARAM_SHIFT - 1))) {
