@@ -63,12 +63,8 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 			break;
 	}
 
-    //Anti-windup gain:
-    if (ki / frequencyHz / kp  > PARAM_MAX){
-        awGain = iGain;
-    } else {
-        awGain = (int32_t)(ki / frequencyHz / kp * PARAM_MULT);
-    }
+    //Anti-windup back-calculation gain:
+    awGain = iGain;
 
 	if (configError < OUTPUT_BOUNDS_INVALID){
 		configError = NO_ERROR;
