@@ -20,6 +20,8 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
 	}
 	minOutput = int64_t(min) * PARAM_MULT;
 	maxOutput = int64_t(max) * PARAM_MULT;
+    outputMaxed = false;
+    outputMined = false;
     executionTimer = 0;
     executionIntervalUs = 1000000 / freqHz;
 }
@@ -94,10 +96,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	//Calculating Proportional term:
 	output += pGain * err;
 
-	//Calculating Integral with anti-windup clamping 
-    if (!((outputMaxed && err > 0) || (outputMined && err < 0))){
-        integratorSum += iGain * err;
-    }
+    //Adding integral term:
 	output += integratorSum;
 
 	//Calculating Derivative term:
@@ -122,6 +121,11 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	} else {
         outputMaxed = false;
         outputMined = false;
+    }
+
+    //Updating integral with anti-windup clamping 
+    if (!((outputMaxed && err > 0) || (outputMined && err < 0))){
+        integratorSum += iGain * err;
     }
 
 	// Remove the integer scaling factor and apply fair rounding
