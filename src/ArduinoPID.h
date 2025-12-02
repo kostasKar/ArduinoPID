@@ -34,10 +34,6 @@
 *
 */
 
-
-#define DERIV_MAX    (INT16_MAX)
-#define DERIV_MIN    (INT16_MIN)
-
 #define PARAM_SHIFT  8
 #define PARAM_BITS   16
 #define PARAM_MAX    (((0x1ULL << PARAM_BITS)-1) >> PARAM_SHIFT) 
