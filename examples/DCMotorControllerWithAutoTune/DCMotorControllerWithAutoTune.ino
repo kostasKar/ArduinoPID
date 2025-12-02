@@ -72,8 +72,6 @@ const int ONBOARD_LED =	  13;
 
 volatile int16_t positionMeasurement = 0;
 volatile int16_t positionSetpoint = 0; 
-uint32_t pidExecutionTimer = 0;
-uint32_t pidExecutionIntervalUs = 1000000 / PID_FREQ_HZ;
 
 PIDGains pidGains;
 AutoTuner autoTuner(AUTOTUNER_SETPOINT, AUTOTUNER_OUTPUT_STEP, AUTOTUNER_HYSTERESIS);
@@ -260,10 +258,8 @@ void setup() {
  */
 void loop() {
   int16_t setpoint, measurement;
-  uint32_t now = micros();
 
-  if (now - pidExecutionTimer > pidExecutionIntervalUs){
-    pidExecutionTimer = now;
+  if (pid.shouldExecuteInLoop()){
     ATOMIC_BLOCK(ATOMIC_FORCEON){
       setpoint = positionSetpoint;
       measurement = positionMeasurement;

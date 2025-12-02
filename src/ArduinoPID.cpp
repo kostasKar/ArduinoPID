@@ -20,8 +20,8 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
 	}
 	minOutput = int64_t(min) * PARAM_MULT;
 	maxOutput = int64_t(max) * PARAM_MULT;
-    outputMaxed = false;
-    outputMined = false;
+    executionTimer = 0;
+    executionIntervalUs = 1000000 / freqHz;
 }
 
 void ArduinoPID::setParameters(PIDGains gains){
@@ -73,6 +73,8 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 	if (configError < OUTPUT_BOUNDS_INVALID){
 		configError = NO_ERROR;
 	}
+
+    reset();
 
 }
 
@@ -130,4 +132,15 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	}
 
 	return rval;
+}
+
+
+bool ArduinoPID::shouldExecuteInLoop(){
+    uint32_t now = micros();
+    if(now - executionTimer >= executionIntervalUs){
+        executionTimer = now;
+        return true;
+    } else {
+        return false;
+    }
 }

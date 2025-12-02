@@ -67,6 +67,7 @@ class ArduinoPID{
 	int16_t compute(int16_t setpoint, int16_t measurement);
 	void reset();
 	ConfigError getError();
+    bool shouldExecuteInLoop();
 	
 	private:
 
@@ -74,11 +75,13 @@ class ArduinoPID{
 	DerivativeFiltering derivativeFiltering;
 	ConfigError configError;
 	int64_t minOutput, maxOutput;
-	bool outputMaxed, outputMined;
 	FirstOrderIIRFilter filter;
 	int32_t pGain, iGain, dGain, awGain;
 	int16_t lastMeasurement;
 	int64_t integratorSum;
+
+    uint32_t executionTimer;
+    uint32_t executionIntervalUs;
 	};
 
 
