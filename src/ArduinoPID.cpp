@@ -102,8 +102,6 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	if (dGain != 0){
         int32_t measurementDiff = (int16_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
         lastMeasurement = measurement;
-        if (measurementDiff > DERIV_MAX) measurementDiff = DERIV_MAX;
-		else if (measurementDiff < DERIV_MIN) measurementDiff = DERIV_MIN;
 		if (derivativeFiltering == NO_FILTERING){
 			output -= dGain * measurementDiff;
 		} else {
