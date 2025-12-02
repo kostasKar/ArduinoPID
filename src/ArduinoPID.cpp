@@ -20,8 +20,7 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
 	}
 	minOutput = int64_t(min) * PARAM_MULT;
 	maxOutput = int64_t(max) * PARAM_MULT;
-    outputMaxed = false;
-    outputMined = false;
+    antiWindupNeeded = false;
     executionTimer = 0;
     executionIntervalUs = 1000000 / freqHz;
 }
@@ -112,19 +111,16 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	
 	if(output > maxOutput){
 		output = maxOutput;
-        outputMaxed = true;
-        outputMined = false;
+        antiWindupNeeded = (err > 0);
 	} else if (output < minOutput){
 		output = minOutput;
-        outputMined = true;
-        outputMaxed = false;
+        antiWindupNeeded = (err < 0);
 	} else {
-        outputMaxed = false;
-        outputMined = false;
+        antiWindupNeeded = false;
     }
 
     //Updating integral with anti-windup clamping 
-    if (!((outputMaxed && err > 0) || (outputMined && err < 0))){
+    if (!antiWindupNeeded){
         integratorSum += iGain * err;
     }
 
