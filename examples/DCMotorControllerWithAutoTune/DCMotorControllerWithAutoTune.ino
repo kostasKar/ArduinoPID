@@ -243,7 +243,6 @@ void setup() {
       Serial.print(F("Ki: ")); Serial.println(pidGains.ki);
       Serial.print(F("Kd: ")); Serial.println(pidGains.kd);
       pid.setParameters(pidGains);
-      pid.reset();
   } else {
       Serial.println(F("No valid PID gains in EEPROM"));
   }
