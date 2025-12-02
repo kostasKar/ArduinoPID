@@ -63,12 +63,6 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 			break;
 	}
 
-    //Anti-windup gain:
-    awGain = (ki / kp) * PARAM_MULT;
-    if (awGain > PARAM_MAX){
-        awGain = iGain;
-    }
-
 	if (configError < OUTPUT_BOUNDS_INVALID){
 		configError = NO_ERROR;
 	}
@@ -100,28 +94,35 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	//Calculating Proportional term:
 	output += pGain * err;
 
-	//Calculating Integral term
-    integratorSum += iGain * err;
+	//Calculating Integral with anti-windup clamping 
+    if (!((outputMaxed && err > 0) || (outputMined && err < 0))){
+        integratorSum += iGain * err;
+    }
 	output += integratorSum;
 
 	//Calculating Derivative term:
 	if (dGain != 0){
-        int32_t diff = (int16_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
+        int32_t measurementDiff = (int16_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
         lastMeasurement = measurement;
 		if (derivativeFiltering == NO_FILTERING){
-			output -= dGain * diff;
+			output -= dGain * measurementDiff;
 		} else {
-			output -= filter.run(diff);
+			output -= filter.run(measurementDiff);
 		}
 	}
 	
-    //Apply output saturation and integral anti-windup with back-calculation
 	if(output > maxOutput){
-        integratorSum += awGain * int32_t(maxOutput - output);
 		output = maxOutput;
+        outputMaxed = true;
+        outputMined = false;
 	} else if (output < minOutput){
-        integratorSum += awGain * int32_t(minOutput - output);
 		output = minOutput;
+        outputMined = true;
+        outputMaxed = false;
+	} else {
+        outputMaxed = false;
+        outputMined = false;
+    }
 
 	// Remove the integer scaling factor and apply fair rounding
 	int16_t rval = output >> PARAM_SHIFT;

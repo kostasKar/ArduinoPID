@@ -76,7 +76,7 @@ class ArduinoPID{
 	ConfigError configError;
 	int64_t minOutput, maxOutput;
 	FirstOrderIIRFilter filter;
-	int32_t pGain, iGain, dGain, awGain;
+	int32_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
 	int64_t integratorSum;
 
