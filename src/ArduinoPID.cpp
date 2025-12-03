@@ -46,9 +46,9 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 		return;
 	}
 
-	pGain = (uint32_t)(kp * PARAM_MULT);
-	iGain = (uint32_t)((ki / frequencyHz) * PARAM_MULT);
-	dGain = (uint32_t)((kd * frequencyHz) * PARAM_MULT);
+	pGain = (int32_t)(kp * PARAM_MULT);
+	iGain = (int32_t)((ki / frequencyHz) * PARAM_MULT);
+	dGain = (int32_t)((kd * frequencyHz) * PARAM_MULT);
 
 	switch (derivativeFiltering){
 		case NO_FILTERING:
