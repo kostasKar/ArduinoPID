@@ -1,7 +1,6 @@
 # ArduinoPID
 
-ArduinoPID is an optimized PID controller library with autotuner for the arduino
-
+ArduinoPID is an optimized PID controller library with an integrated autotuner for Arduino.
 ## Features
 
 * Fast, optimized, fixed point, integer-only internal arithmetic 
