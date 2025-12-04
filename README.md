@@ -4,21 +4,20 @@ ArduinoPID is an optimized PID controller library with autotuner for the arduino
 
 ## Features
 
-* Fast optimized integer-only internal arithmetic manipulations 
-* 32-bit integer setpoint and measurement values. Selectable output range 
-* Function pointer used for direct output handling
+* Fast optimized fixed point integer-only internal arithmetic 
+* 16-bit integer setpoint and measurement values. Selectable output range 
 * Derivative filtering with selectable cutoff frequency
-* Derivative on measurement or on error
-* Integrator anti-windup
+* Derivative on measurement
+* Integrator anti-windup with tracking back-calculation
 * Autotuner (relay method) with analysis output
 * floating point controller gains stored in EEPROM with crc. 
 
 
 ## Performance
 
-~ 75 μsec per execution with all features enabled. Tested up to 10kHz control loop frequency.
-```computeInLoop()``` is to be called inside ```loop()``` and checks the ```micros()```.
-```compute()``` can be alternatively called inside a timer ISR for even better performance 
+~ 48 μsec per execution with all features enabled in an arduino uno. Tested up to 10kHz control loop frequency.
+```shouldExecuteInLoop()``` is to be called inside ```loop()``` and checks ```micros()```.
+```compute(setpoint, measurement)``` called directly by the application 
 
 
 
