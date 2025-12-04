@@ -11,23 +11,9 @@
 
 #include <inttypes.h>
 #include "Arduino.h"
-#include <avr/io.h>
-#include <util/atomic.h>
-#include "AutoTune.h"
 #include "DerivativeFiltered.h"
-#include <EEPROM.h>
-#include "crc.h"
-
-#define INTERNAL_MAX_OUTPUT 16384 //this has to be a power of two for easier calculations
-#define INTERNAL_MAX_OUTPUT_BITS 14 // log2(INTERNAL_MAX_OUTPUT)
-
-#define DERIVATIVE_ON_MEASUREMENT true
-#define FILTERED_DERIVATIVE true
-
-
-typedef void (*voidWriteInt32PtrType)(int32_t); //function pointer that is called with the PID output after its calculation
-
-
+#include "FirstOrderIIRFilter.h"
+#include "PIDGains.h"
 
 
 /*
@@ -48,60 +34,57 @@ typedef void (*voidWriteInt32PtrType)(int32_t); //function pointer that is calle
 *
 */
 
+#define SCALING_SHIFT  8
+#define SCALING_MULT   (0x1ULL << SCALING_SHIFT) 
+#define PARAM_BITS   16
+#define PARAM_MAX    (((0x1ULL << PARAM_BITS)-1) >> SCALING_SHIFT) 
+
+
+enum DerivativeFiltering{
+	NO_FILTERING,
+	LOW_FILTERING,
+	MEDIUM_FILTERING,
+	HIGH_FILTERING,
+    CUSTOM_CUTOFF_HZ
+};
+
+enum ConfigError{
+	NO_ERROR,
+	PARAMS_UNCONFIGURED,
+	KP_OUT_OF_RANGE,
+	KI_OUT_OF_RANGE,
+	KD_OUT_OF_RANGE,
+	OUTPUT_BOUNDS_INVALID,
+	SAMPLING_FREQ_ERROR
+};
+
 
 class ArduinoPID{
 	
 	public:
-	
-	ArduinoPID(voidWriteInt32PtrType  outPtr, double derivativeFilterCutoff, uint16_t frequencyHz, int32_t min, int32_t max, AutoTune * tuner = NULL);
-	void autoSetGains();
-	bool computeInLoop();
-	bool compute();
+
+	ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering = LOW_FILTERING, float filterCutoffHz = 1.0);
+	void setParameters(float kp, float ki, float kd);
+	void setParameters(PIDGains gains);
+	int16_t compute(int16_t setpoint, int16_t measurement);
 	void reset();
-	void stop();
-	void start();
-	bool isStopped();
-	void setGains (double kp, double ki, double kd);
-	void autoTune();
-	void setSetpoint(int32_t s);
-	void setMeasurement(int32_t m);
-	int32_t getSetpoint();
-	int32_t getMeasurement();
-	void incrementSetpoint (int8_t s);
-	void incrementMeasurement (int8_t m);
-	bool isSpotOn();
-	bool isSteady();
-	
+	ConfigError getError();
+    bool shouldExecuteInLoop();
 	
 	private:
-	
-	volatile int32_t setpoint;
-	volatile int32_t measurement;
-	int32_t error;
-	int32_t lastError;			//used if FILTRED_DERIVATIVE == false
-	int32_t lastMeasurement;	//used if FILTRED_DERIVATIVE == false
-	
-	DerivativeFiltered derFiltered;
-	uint32_t previousExecutionTime;
-	int16_t pCoeff, iCoeff, dCoeff;		//the gains
-	double derivativeFilterN;
-	int32_t errorSum;
-	double  dtMs;	//sampling period in ms
-	uint32_t dtMicros;
-	int32_t outputRange, minOutput;
-	bool internalOutputMAXed, internalOutputMINed;
-	voidWriteInt32PtrType outputPtr;
-	bool stopped;
-	
-	int32_t autoTuneInput, autoTuneOutput;
-	AutoTune * autoTuner;
-	
-	bool antiWindupNeeded();
-	int32_t applyLimit(int32_t value);
-	int32_t scaleToRange (int32_t value);
-	void writeOutput(int32_t calculatedOutput);
-	void writeAutoTunerGainsToEEPROM();
-	bool readAutoTunerGainsFromEEPROM();
+
+	float frequencyHz;
+	DerivativeFiltering derivativeFiltering;
+	ConfigError configError;
+	int64_t minOutput, maxOutput;
+	FirstOrderIIRFilter filter;
+    float filterCutoffHz;
+	int32_t pGain, iGain, dGain;
+	int16_t lastMeasurement;
+	int64_t integratorSum;
+
+    uint32_t executionTimer;
+    uint32_t executionIntervalUs;
 	};
 
 

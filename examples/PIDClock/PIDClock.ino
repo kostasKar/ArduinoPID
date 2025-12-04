@@ -1,9 +1,12 @@
-#include <ArduinoPID.h>
-#include <AutoTune.h>
+#include <Arduino.h>
 #include <FastGPIO.h>
+#include <ArduinoPID.h>
+#include <AutoTuner.h>
+#include <PIDGains.h>
+#include <util/atomic.h>
 #include "PulseScaler.h"
 #include <Wire.h>
-#include <RtcDS3231.h>
+
 
 
 
@@ -54,18 +57,20 @@
 
 
 //PID configuration
-#define D_FILTER_N    300.0    //the derivative filter's cutoff (rad/sec)
 #define PID_FREQ_HZ   1000     //Sampling frequency of the PID loop (Hz)
 
 //Autotuner configuration:
 #define AUTOTUNER_SETPOINT    50        //(steps)
-#define AUTOTUNER_OUTPUT_STEP 12000     //output value - must be less than 16384 (INTERNAL_MAX_OUTPUT found in MyIntPID.h)
+#define AUTOTUNER_OUTPUT_STEP ((int32_t)(0.75 * TIMER_TOP))     
 #define AUTOTUNER_HYSTERESIS  10        //(steps)
 
 //clock specific
 #define STEPS_PER_ROTATION    1336
 #define SECS_PER_ROTATION     43200 //12*3600 
 #define USE_RTC               true
+
+//Spot-on indication threshold
+#define SPOT_ON_THRESHOLD 5       //(steps)
 
 //IO pins:
 const int CH_A =            2;   //interrupt 0
@@ -80,19 +85,21 @@ const int SET_TIME_BUTTON = 6;   //PCB ENABLE input
 const int RTC_I2C_SDA =     A4;  //handled automatically by Wire library
 const int RTC_I2C_SCL =     A5;  //handled automatically by Wire library 
 
-
-void setMotorSpeed (int32_t outputValue);
-
 /* --------------------------------------------------------------------
                              GLOBALS
   ---------------------------------------------------------------------
 */
 
-AutoTune autoTuner(AUTOTUNER_SETPOINT, AUTOTUNER_OUTPUT_STEP, AUTOTUNER_HYSTERESIS);
-IntPID pid(setMotorSpeed, D_FILTER_N, PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, &autoTuner);
+volatile int16_t positionMeasurement = 0;
+volatile int16_t positionSetpoint = 0; 
+
+PIDGains pidGains;
+AutoTuner autoTuner(AUTOTUNER_SETPOINT, AUTOTUNER_OUTPUT_STEP, AUTOTUNER_HYSTERESIS);
+ArduinoPID pid(PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, MEDIUM_FILTERING);
 PulseScaler scaler(SECS_PER_ROTATION, STEPS_PER_ROTATION);
 
 #if USE_RTC
+#include <RtcDS3231.h>
 RtcDS3231<TwoWire> Rtc(Wire);
 #endif
 
@@ -103,17 +110,25 @@ uint32_t previousMillis;
   ---------------------------------------------------------------------
 */
 ISR(INT0_vect) {
-  pid.incrementMeasurement((FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()) ?  1 : -1);
+  if(FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()){
+    positionMeasurement++;
+  } else {
+    positionMeasurement--;
+  }
 }
 
 ISR(INT1_vect) {
-  pid.incrementMeasurement((FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()) ? -1 : 1);
+  if(FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()){
+    positionMeasurement--;
+  } else {
+    positionMeasurement++;
+  }
 }
 
 ISR(PCINT2_vect) {
   if (FastGPIO::Pin<CLOCK_1_HZ_INPUT>::isInputHigh()){
     if (scaler.step()){
-      pid.incrementSetpoint(-1);
+      positionSetpoint--;
     }
   }
 }
@@ -170,10 +185,39 @@ void setMotorSpeed (int32_t outputValue) {
   }
 }
 
-void performAutoTune() {
-  pid.reset();
-  delay(500);
-  pid.autoTune();
+void resetPosition(){
+    ATOMIC_BLOCK(ATOMIC_FORCEON){
+        positionMeasurement = 0;
+        positionSetpoint = 0;
+    }
+}
+
+void checkPIDError(){
+    if (pid.getError() != NO_ERROR) {
+        Serial.print(F("PID configuration error: ")); Serial.println(pid.getError());
+    } else {
+        Serial.println(F("PID configured successfully"));
+    }
+} 
+
+void performAutoTune(){
+    Serial.println(F("Starting Autotune..."));
+    setMotorSpeed(0);
+    delay(1000);
+    int32_t measurement;
+
+    resetPosition();
+    autoTuner.init();
+    while (!autoTuner.isFinished()){
+        ATOMIC_BLOCK(ATOMIC_FORCEON){ measurement = positionMeasurement; }
+        setMotorSpeed(autoTuner.run(measurement));
+    }   
+
+    pidGains = autoTuner.getPIDGains();
+    pidGains.saveToEEPROM();
+    pid.setParameters(pidGains);
+    pid.reset();
+    checkPIDError();
 }
 
 bool setTimeButtonIsPressed() {
@@ -232,8 +276,18 @@ void setup() {
   pinMode(EXT_AUTOTUNE, INPUT_PULLUP);
   pinMode(SET_TIME_BUTTON, INPUT_PULLUP);
   pinMode(ONBOARD_LED, OUTPUT);
-  pid.autoSetGains();
-  pid.start();
+
+  if (pidGains.readFromEEPROM()) {
+      Serial.println(F("Loaded PID gains from EEPROM:"));
+      Serial.print(F("Kp: ")); Serial.println(pidGains.kp);
+      Serial.print(F("Ki: ")); Serial.println(pidGains.ki);
+      Serial.print(F("Kd: ")); Serial.println(pidGains.kd);
+      pid.setParameters(pidGains);
+  } else {
+      Serial.println(F("No valid PID gains in EEPROM"));
+  }
+
+  checkPIDError();
 
 #if USE_RTC
   Rtc.Begin();
@@ -250,18 +304,26 @@ void setup() {
 */
 void loop() {
 
-  pid.computeInLoop();
+  int16_t setpoint, measurement;
+
+  if (pid.shouldExecuteInLoop()){
+    ATOMIC_BLOCK(ATOMIC_FORCEON){
+      setpoint = positionSetpoint;
+      measurement = positionMeasurement;
+    }
+    setMotorSpeed(pid.compute(setpoint, measurement));
+  }
 
 #if USE_RTC == false
  if (millis() - previousMillis >= 1000) {
    previousMillis = millis();
    if (scaler.step()){
-      pid.incrementSetpoint(-1);
+      positionSetpoint--;
    }
  }
 #endif
 
-  if (setTimeButtonIsPressed()) { pid.reset();}
+  if (setTimeButtonIsPressed()) { resetPosition(); pid.reset();}
   if (autotuneButtonIsPressed()) { performAutoTune();}
-  if (pid.isSteady()){FastGPIO::Pin<ONBOARD_LED>::setOutputLow();} else {FastGPIO::Pin<ONBOARD_LED>::setOutputHigh();}
+  if (abs(measurement - setpoint) <= SPOT_ON_THRESHOLD) {FastGPIO::Pin<ONBOARD_LED>::setOutputLow();} else {FastGPIO::Pin<ONBOARD_LED>::setOutputHigh();}
 }

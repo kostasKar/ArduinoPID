@@ -1,8 +1,10 @@
 
+#include <Arduino.h>
 #include <FastGPIO.h>
 #include <ArduinoPID.h>
-#include <AutoTune.h>
-#include <EEPROM.h>
+#include <AutoTuner.h>
+#include <PIDGains.h>
+#include <util/atomic.h>
 
 
 
@@ -10,8 +12,7 @@
  *  Kostas Karouzos 2020 
  * 
  *  PID position control of DC motor 
- *  The motor is driven using an H-bridgr as the DRV8871, with two signals (CW, CCW) used in Sign-Magnitude or Anti-phase lock mode.
- *  Driving mode can be configured by the ANTIPHASE_LOCK parameter. The frequency of the PWM signals is also configured
+ *  The motor is driven using an H-bridgr as the DRV8871, with two signals (CW, CCW) used in Sign-Magnitude mode.
  *  
  *  As feedback from the motor, a quadrature optical encoder should be used
  *  The two encoder channels, A and B of the encoder are driven to the external interrupts 0 and 1 of the processor
@@ -22,11 +23,10 @@
  *  The PID loop frequency, as well as the derivative filter cutoff frequency can be configured.
  *  The gains of the PID controller can be either autotuned or manually set.
  *  The autotuner performs the auto-tuning relay method with the configured parameters. 
- *  The auto tuned gains are held in EEPROM. If there are no or invalid gains in EEPROM, autotuning is fired during startup
- *  Otherwise, Autotuning can be performed by pressing the correspoding button.
+ *  The auto tuned gains are held in EEPROM. If there are no or invalid gains in EEPROM, the controller does not run.
+ *  Autotuning can be performed by pressing the correspoding button.
  *  
- *  During operation, the onboard LED is on when the controller is in steady state
- *  
+ *  During operation, the onboard LED is on when the controller is within configurable limits from the setpoint.
  *  Additionally to the STEPS/DIR interface, the setpoint can be set by sending an integer (position setpoint in steps units) through Serial
  *  
  */
@@ -40,21 +40,18 @@
 //Motor driving configuration
 #define PWM_FREQ        20000         //(Hz)
 #define TIMER_TOP       ((F_CPU / PWM_FREQ)-1)  //The highest value of the PWM timer
-#define ANTIPHASE_LOCK  false         //antiphase-lock driving mode of the motor. Alternative is sign-magnitude
 #define DIR_INPUT_INV   false         //invert the logic of the DIR input signal`
 
 //PID configuration
-#define D_FILTER_N      300.0         //the derivative filter's cutoff (rad/sec)
 #define PID_FREQ_HZ     1000          //Sampling frequency of the PID loop
-#define PID_TUNE_OVRRD  false         //If true, no AutoTune is performed an the PID gains are given in the below defines
-#define K_P_OVRRD       203.72        //Kp hard set value
-#define K_I_OVRRD       23967.57      //Ki hard set value
-#define K_D_OVRRD       0.43          //Kd hard set value
 
 //Autotuner configuration:
 #define AUTOTUNER_SETPOINT    50      //(steps)
-#define AUTOTUNER_OUTPUT_STEP 12000   //output value - must be less than 16384 (INTERNAL_MAX_OUTPUT found in MyIntPID.h)
+#define AUTOTUNER_OUTPUT_STEP ((int32_t)(0.75 * TIMER_TOP))
 #define AUTOTUNER_HYSTERESIS  10      //(steps)
+
+//Spot-on indication threshold
+#define SPOT_ON_THRESHOLD 5       //(steps)
 
 //IO pins:
 const int CH_A =          2;          //interrupt 0
@@ -73,15 +70,12 @@ const int ONBOARD_LED =	  13;
  *---------------------------------------------------------------------
  */
 
-AutoTune autoTuner(AUTOTUNER_SETPOINT, AUTOTUNER_OUTPUT_STEP, AUTOTUNER_HYSTERESIS);
+volatile int16_t positionMeasurement = 0;
+volatile int16_t positionSetpoint = 0; 
 
-void setMotorSpeed (int32_t outputValue);
-#if ANTIPHASE_LOCK
-ArduinoPID pid(setMotorSpeed, D_FILTER_N, PID_FREQ_HZ, 0, TIMER_TOP, &autoTuner);
-#else
-ArduinoPID pid(setMotorSpeed, D_FILTER_N, PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, &autoTuner);
-#endif
-
+PIDGains pidGains;
+AutoTuner autoTuner(AUTOTUNER_SETPOINT, AUTOTUNER_OUTPUT_STEP, AUTOTUNER_HYSTERESIS);
+ArduinoPID pid(PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, MEDIUM_FILTERING);
 
 
 /* --------------------------------------------------------------------
@@ -89,17 +83,28 @@ ArduinoPID pid(setMotorSpeed, D_FILTER_N, PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, &a
  *---------------------------------------------------------------------
  */
 ISR(INT0_vect) {
-  pid.incrementMeasurement((FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()) ?  1 : -1);
+  if(FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()){
+    positionMeasurement++;
+  } else {
+    positionMeasurement--;
+  }
 }
 
 ISR(INT1_vect) {
-  pid.incrementMeasurement((FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()) ? -1 : 1);
+  if(FastGPIO::Pin<CH_A>::isInputHigh() != FastGPIO::Pin<CH_B>::isInputHigh()){
+    positionMeasurement--;
+  } else {
+    positionMeasurement++;
+  }
 }
 
-//TODO maybe use one of INT0 or INT1 for this so that we can have it triggered only on rising edge and ommit the if statement
 ISR(PCINT2_vect) {
   if (FastGPIO::Pin<STEPS>::isInputHigh()){
-	  pid.incrementSetpoint((FastGPIO::Pin<DIR>::isInputHigh() ^ DIR_INPUT_INV) ? 1 : -1);
+	 if(FastGPIO::Pin<DIR>::isInputHigh() ^ DIR_INPUT_INV){
+        positionSetpoint++;
+     } else{
+        positionSetpoint--;
+     }  
   }
 }
 
@@ -113,23 +118,26 @@ void PwmSetup(){
   //setting PWM generator (timer1) and starting it to count:
   ICR1 = TIMER_TOP;
 
-#if ANTIPHASE_LOCK
-    TCCR1A = 0b10110010; 
-#else
-    TCCR1A = 0b10100010;  
-#endif 
+  TCCR1A =
+    (1 << COM1A1) | //non inverted mode on OC1A
+    (0 << COM1A0) |
+    (1 << COM1B1) | //non inverted mode on OC1B
+    (0 << COM1B0) |
+    (1 << WGM11)  | //part of Fast PWM mode 
+    (0 << WGM10);
 
-  TCCR1B = 0b00011001;
-  stopMotor();
-  
-  /*Fast-PWM mode. 
-  Top counting value: register ICR1
-  Compare value for channel A: register OCR1A
-  Channel A: non-inverted (or inverted if INVERT_DIR == true)
-  Channel B: inverted (or non-inverted if INVERT_DIR == true)
-  No prescaler
-  */
-  
+  TCCR1B =
+    (0 << ICNC1) |
+    (0 << ICES1) |
+    (1 << WGM13) | //part of Fast PWM mode
+    (1 << WGM12) |
+    (0 << CS12)  | //no prescaler
+    (0 << CS11)  |
+    (1 << CS10);
+
+  OCR1A = 0;
+  OCR1B = 0;	
+
   pinMode(MOTOR_OUT_A, OUTPUT);
   pinMode(MOTOR_OUT_B, OUTPUT);
 }
@@ -160,53 +168,59 @@ void ConfigureExternalInperrupts() {
  *---------------------------------------------------------------------
  */
 //abs(outputValue) must not be greater than TIMER_TOP
-void setMotorSpeed (int32_t outputValue){
+void setMotorSpeed (int16_t outputValue){
 
-    if (!FastGPIO::Pin<ENABLE>::isInputHigh()){
-        stopMotor();
-        return;
-    }
-    
-#if ANTIPHASE_LOCK
-	OCR1A = outputValue;
-	OCR1B = outputValue;
-#else
-    if (outputValue >= 0){
-      OCR1A = outputValue;
-      OCR1B = 0;
-    } else {
-      OCR1A = 0;
-      OCR1B = -outputValue;
-    }
-#endif
-}
+  if (!FastGPIO::Pin<ENABLE>::isInputHigh()){
+    OCR1A = 0;
+    OCR1B = 0;
+    return;
+  }
 
-void stopMotor(){
-#if ANTIPHASE_LOCK
-	OCR1A = TIMER_TOP / 2;
-	OCR1B = TIMER_TOP / 2;
-#else
-	OCR1A = 0;
-	OCR1B = 0;
-#endif
-	
-}
-
-void readSetpoint(){
-  if (Serial.available()){
-	int32_t setPoint = Serial.parseInt();
-    pid.setSetpoint(setPoint);
-    Serial.print("new Setpoint:");
-    Serial.println(setPoint);
+  if (outputValue >= 0){
+    OCR1A = outputValue;
+    OCR1B = 0;
+  } else {
+    OCR1A = 0;
+    OCR1B = -outputValue;
   }
 }
 
-void performAutoTune(){
-	stopMotor();
-	delay(1000);
-	pid.reset();
-	pid.autoTune();
+void readSerialSetpoint(){
+  if (Serial.available()){
+	positionSetpoint = Serial.parseInt();
+    Serial.print("new Setpoint:");
+    Serial.println(positionSetpoint);
+  }
 }
+
+void checkPIDError(){
+    if (pid.getError() != NO_ERROR) {
+        Serial.print(F("PID configuration error: ")); Serial.println(pid.getError());
+    } else {
+        Serial.println(F("PID configured successfully"));
+    }
+} 
+
+void performAutoTune(){
+    Serial.println(F("Starting Autotune..."));
+    setMotorSpeed(0);
+    delay(1000);
+    int32_t measurement;
+
+    autoTuner.init();
+    while (!autoTuner.isFinished()){
+        ATOMIC_BLOCK(ATOMIC_FORCEON){ measurement = positionMeasurement; }
+        setMotorSpeed(autoTuner.run(measurement));
+    }   
+
+    pidGains = autoTuner.getPIDGains();
+    pidGains.saveToEEPROM();
+    pid.setParameters(pidGains);
+    pid.reset();
+    checkPIDError();
+}
+
+  
 
 
 /* --------------------------------------------------------------------
@@ -223,13 +237,17 @@ void setup() {
   pinMode(AUTOTUNE, INPUT_PULLUP);
   pinMode(ONBOARD_LED, OUTPUT);
 
-#if PID_TUNE_OVRRD
-	pid.setGains(K_P_OVRRD, K_I_OVRRD, K_D_OVRRD);
-#else	
-	pid.autoSetGains();
-#endif
-  
-  pid.start();
+  if (pidGains.readFromEEPROM()) {
+      Serial.println(F("Loaded PID gains from EEPROM:"));
+      Serial.print(F("Kp: ")); Serial.println(pidGains.kp);
+      Serial.print(F("Ki: ")); Serial.println(pidGains.ki);
+      Serial.print(F("Kd: ")); Serial.println(pidGains.kd);
+      pid.setParameters(pidGains);
+  } else {
+      Serial.println(F("No valid PID gains in EEPROM"));
+  }
+
+  checkPIDError();
 }
 
 
@@ -238,11 +256,17 @@ void setup() {
  *---------------------------------------------------------------------
  */
 void loop() {
+  int16_t setpoint, measurement;
+
+  if (pid.shouldExecuteInLoop()){
+    ATOMIC_BLOCK(ATOMIC_FORCEON){
+      setpoint = positionSetpoint;
+      measurement = positionMeasurement;
+    }
+    setMotorSpeed(pid.compute(setpoint, measurement));
+  }
   
-  pid.computeInLoop();
-#if PID_TUNE_OVRRD == false
   if (!FastGPIO::Pin<AUTOTUNE>::isInputHigh()){performAutoTune();}
-#endif
-  if (pid.isSteady()){FastGPIO::Pin<ONBOARD_LED>::setOutputLow();} else {FastGPIO::Pin<ONBOARD_LED>::setOutputHigh();}
-  readSetpoint();
+  if (abs(measurement - setpoint) <= SPOT_ON_THRESHOLD) {FastGPIO::Pin<ONBOARD_LED>::setOutputLow();} else {FastGPIO::Pin<ONBOARD_LED>::setOutputHigh();}
+  readSerialSetpoint();
 }

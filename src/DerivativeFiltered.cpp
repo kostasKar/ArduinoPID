@@ -2,15 +2,31 @@
 #include "DerivativeFiltered.h"
 
 
-int32_t DerivativeFiltered::output(int32_t input){
 
-	_out = (coef1 * input) - ((coef2 * outputSum) >> 10);
-	outputSum += _out;
-	return _out;
+
+#define OUTPUT_MAX	(INT32_MAX)
+#define SCALING_MULT	256
+#define SCALING_BITS	8
+
+
+
+
+int32_t DerivativeFiltered::run(int32_t input){
+
+	output = (int64_t(coef1) * int64_t(input)) - (int64_t(coef2) * int64_t(outputSum) >> SCALING_BITS);
+
+	if (output > OUTPUT_MAX){
+		output = OUTPUT_MAX;
+	} else if (output < -OUTPUT_MAX){
+		output = -OUTPUT_MAX;
+	}
+
+	outputSum += output;
+	return int32_t(output);
 }
 
 int32_t DerivativeFiltered::getLastOutput(){
-	return _out;
+	return int32_t(output);
 }
 
 void DerivativeFiltered::reset(){
@@ -18,10 +34,10 @@ void DerivativeFiltered::reset(){
 }
 
 
-void DerivativeFiltered::setParams(double _N, double _K, double _dtMs){
+void DerivativeFiltered::setParams(double cutoffRadPerSec, double Gain, double freqHz){
   outputSum = 0;
   
-  coef1 = (int32_t) (_K * _N);
-  coef2 = (int32_t) (_N * _dtMs);
+  coef1 = (int32_t) (Gain * cutoffRadPerSec);
+  coef2 = (int32_t) (cutoffRadPerSec * SCALING_MULT / freqHz);
 }
 
