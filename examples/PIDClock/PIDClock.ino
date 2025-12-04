@@ -6,7 +6,7 @@
 #include <util/atomic.h>
 #include "PulseScaler.h"
 #include <Wire.h>
-#include <RtcDS3231.h>
+
 
 
 
@@ -99,6 +99,7 @@ ArduinoPID pid(PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, MEDIUM_FILTERING);
 PulseScaler scaler(SECS_PER_ROTATION, STEPS_PER_ROTATION);
 
 #if USE_RTC
+#include <RtcDS3231.h>
 RtcDS3231<TwoWire> Rtc(Wire);
 #endif
 
