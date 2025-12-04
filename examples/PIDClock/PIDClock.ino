@@ -14,35 +14,51 @@
  *  Kostas Karouzos 2019
  *  
  *  ------------------------------------------------------------------
- *  CONTROLLER operation:
+ *  CONTROLLER Operation:
  *  ------------------------------------------------------------------
- *  PID position control of DC motor 
- *  The motor is driven using an H-bridgr as the DRV8871, with two signals (CW, CCW) used in Sign-Magnitude mode
+ *  PID position control of a DC motor.
+ *  The motor is driven using an H-bridge such as the DRV8871, with two
+ *  signals (CW, CCW) used in Sign-Magnitude mode.
  *  
- *  As feedback from the motor, a quadrature optical encoder should be used
- *  The two encoder channels, A and B of the encoder are driven to the external interrupts 0 and 1 of the processor
+ *  As feedback from the motor, a quadrature optical encoder is used.
+ *  The two encoder channels, A and B, are connected to external
+ *  interrupts 0 and 1 of the processor.
  *
- *  The PID loop frequency, as well as the derivative filter cutoff frequency can be configured.
- *  The gains of the PID controller are autotuned 
- *  The autotuner performs the auto-tuning relay method with the configured parameters. 
- *  The auto tuned gains are held in EEPROM. If there are no or invalid gains in EEPROM, autotuning is fired during startup
- *  Otherwise, Autotuning can be performed by pressing the specific button.
+ *  The PID loop frequency, as well as the derivative filter cutoff
+ *  frequency, can be configured.
+ *  The gains of the PID controller are autotuned.
+ *  The autotuner performs the relay auto-tuning method using the
+ *  configured parameters.
+ *
+ *  The auto-tuned gains are stored in EEPROM. If no gains are present
+ *  or the stored values are invalid, autotuning can be initiated by 
+ *  pressing the designated button.
  *  
- *  During operation, the onboard LED is on when the controller is in steady state
+ *  During operation, the onboard LED is lit when the controller is in
+ *  steady state.
  *  
  *  ------------------------------------------------------------------
- *  CLOCK operation:
+ *  CLOCK Operation:
  *  ------------------------------------------------------------------
- *  The setpoint of the controller is the position of the hours hand of a clock. 
- *  So it makes a full revolution every 12 hours. 
- *  To accomplish that, the resolution of the encoder should be used: STEPS_PER_ROTATION.
- *  class PulseScaler manages to produce STEPS_PER_ROTATION steps per 12 hours (or 43200 secs), even if these numbers are mutually prime
- *  The clock input is either the 1 Hz pulse train produced by an RTC module (with USE_RTC = true), or
- *  the internal millis() function is used. The millis() is not thermally calibrated so it may have significant drift
+ *  The setpoint of the controller is the position of the hour hand of
+ *  a clock. Therefore, it completes one full revolution every 12 hours.
  *  
- *  The Clock also has 2 external buttons:
- *  SET button lets you change the position of the hand to the desired position while it is keeped pressed, without counteracting to it 
- *  EXT_AUTOTUNED is an additional button input to perform auto tune, in case it is wanted to have one on the clock chassis
+ *  To achieve this, the resolution of the encoder must be used:
+ *  STEPS_PER_ROTATION.
+ *  The PulseScaler class generates STEPS_PER_ROTATION steps over
+ *  12 hours (or 43,200 seconds), even if these numbers are mutually
+ *  prime.
+ *  
+ *  The clock input is either the 1 Hz pulse train produced by an DS3231 
+ *  RTC module (with USE_RTC = true), or the internal millis() function is
+ *  used. The millis() function is not temperature-calibrated, so it may
+ *  exhibit significant drift.
+ *  
+ *  The clock also has two external buttons:
+ *  - SET: allows adjustment of the hand position while held down,
+ *    without the controller counteracting the movement.
+ *  - EXT_AUTOTUNE: an additional button to trigger autotuning, useful
+ *    if such a button is desired on the clock chassis.
  *  
  */
 
