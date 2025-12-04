@@ -184,6 +184,13 @@ void setMotorSpeed (int32_t outputValue) {
   }
 }
 
+void resetPosition(){
+    ATOMIC_BLOCK(ATOMIC_FORCEON){
+        positionMeasurement = 0;
+        positionSetpoint = 0;
+    }
+}
+
 void checkPIDError(){
     if (pid.getError() != NO_ERROR) {
         Serial.print(F("PID configuration error: ")); Serial.println(pid.getError());
@@ -254,13 +261,6 @@ bool autotuneButtonIsPressed() {
   
 }
 
-void resetPosition(){
-    ATOMIC_BLOCK(ATOMIC_FORCEON){
-        positionMeasurement = 0;
-        positionSetpoint = 0;
-    }
-}
-
 
 /* --------------------------------------------------------------------
                              SETUP
@@ -317,7 +317,7 @@ void loop() {
  if (millis() - previousMillis >= 1000) {
    previousMillis = millis();
    if (scaler.step()){
-      pid.incrementSetpoint(-1);
+      positionSetpoint--;
    }
  }
 #endif
