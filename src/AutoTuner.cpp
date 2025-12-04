@@ -90,13 +90,10 @@ void AutoTuner::analyzeMeasurements(){
 	double averageAmplitude = 0;
 	
 	Serial.println(F("Autotuning data:"));
-	Serial.print(F("Input setpoint: "));
-	Serial.println(setpoint);
-	Serial.print(F("Output step (d): "));
-	Serial.print(outputStep);
-	Serial.println(F(" (max output: 16384)"));
-	Serial.print(F("hysteresis: "));
-	Serial.println(hysteresis);
+	Serial.print(F("Input setpoint: ")); Serial.println(setpoint);
+	Serial.print(F("Output step (d): ")); Serial.println(outputStep);
+	Serial.print(F("hysteresis: ")); Serial.println(hysteresis);
+	
 
 	for (int i = NUMBER_OF_PEAKS - 1; i > 0; i--){
 		uint32_t maxPeriod = maxs[i].timePointUs - maxs[i-1].timePointUs;
@@ -106,27 +103,19 @@ void AutoTuner::analyzeMeasurements(){
 		uint32_t periodOverSetpoint = maxs[i].nextZeroCrossTimePointUs - mins[i-1].nextZeroCrossTimePointUs;  //these are just to check if we need outpout bias trimming
 		uint32_t periodUnderSetpoint = mins[i].nextZeroCrossTimePointUs - maxs[i].nextZeroCrossTimePointUs;
 		
-		Serial.print(F("Maxes Period: "));
-		Serial.print(maxPeriod);
-		Serial.print(F(" Mins Period: "));
-		Serial.print(minPeriod);
-		Serial.print(F(" Duration over setpoint: "));
-		Serial.print(periodOverSetpoint);
-		Serial.print(F(" Duration under setpoint: "));
-		Serial.println(periodUnderSetpoint);
-		Serial.print(F(" Max: "));
-		Serial.print(maxs[i].peakValue);
-		Serial.print(F(" Min: "));
-		Serial.println(mins[i].peakValue);
+		Serial.print(F("Maxes Period: ")); Serial.print(maxPeriod);
+		Serial.print(F(" Mins Period: ")); Serial.print(minPeriod);
+		Serial.print(F(" Duration over setpoint: ")); Serial.print(periodOverSetpoint);
+		Serial.print(F(" Duration under setpoint: ")); Serial.println(periodUnderSetpoint);
+		Serial.print(F(" Max: ")); Serial.print(maxs[i].peakValue);
+		Serial.print(F(" Min: ")); Serial.println(mins[i].peakValue);
 	}
 	
 	averagePeriod /= (NUMBER_OF_PEAKS - 1) * 2;
 	averageAmplitude /= (NUMBER_OF_PEAKS - 1);
 	
-	Serial.print(F("Average Period (us): "));
-	Serial.println(averagePeriod);
-	Serial.print(F("Average Amplitude: "));
-	Serial.println(averageAmplitude);
+	Serial.print(F("Average Period (us): ")); Serial.println(averagePeriod);
+	Serial.print(F("Average Amplitude: ")); Serial.println(averageAmplitude);
 	
 	double Pu = averagePeriod / 1000000; //in sec
 	//double Ku = (4.0 * (_outputStep)) / (3.1415 * averageAmplitude);
@@ -136,12 +125,9 @@ void AutoTuner::analyzeMeasurements(){
 	Ki = 1.2 * Ku / (Pu);
 	Kd = 0.075 * Ku * Pu;
 	
-	Serial.print(F("Kp: "));
-	Serial.println(Kp);
-	Serial.print(F("Ki: "));
-	Serial.println(Ki);  
-	Serial.print(F("Kd: "));
-	Serial.println(Kd);
+	Serial.print(F("Kp: ")); Serial.println(Kp);
+	Serial.print(F("Ki: ")); Serial.println(Ki);  
+	Serial.print(F("Kd: ")); Serial.println(Kd);
 	
 }
 
