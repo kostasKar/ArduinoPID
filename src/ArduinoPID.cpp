@@ -17,7 +17,14 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
 {
 	if (min >= max){
 		configError = OUTPUT_BOUNDS_INVALID;
+        return;
 	}
+
+    if (frequencyHz <= 0){
+        configError = SAMPLING_FREQ_ERROR;
+        return;
+    }
+
 	minOutput = int64_t(min) * SCALING_MULT;
 	maxOutput = int64_t(max) * SCALING_MULT;
     executionTimer = 0;
