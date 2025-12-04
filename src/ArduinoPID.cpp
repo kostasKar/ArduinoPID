@@ -10,10 +10,11 @@
 
 
 
-ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering):
+ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering, float filterCutoffHz):
 	frequencyHz(freqHz),
 	derivativeFiltering(derivFiltering), 
-	configError(PARAMS_UNCONFIGURED)
+	configError(PARAMS_UNCONFIGURED),
+    filterCutoffHz(filterCutoffHz)
 {
 	if (min >= max){
 		configError = OUTPUT_BOUNDS_INVALID;
@@ -60,15 +61,18 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 		case NO_FILTERING:
 			break;
 		case LOW_FILTERING:
-			filter.setParams(kd * frequencyHz, 0.80 * frequencyHz, frequencyHz);
+			filterCutoffHz = 0.15 * frequencyHz;
 			break;
 		case MEDIUM_FILTERING:
-			filter.setParams(kd * frequencyHz, 0.60 * frequencyHz, frequencyHz);
+			filterCutoffHz = 0.05 * frequencyHz;
 			break;
 		case HIGH_FILTERING:
-			filter.setParams(kd * frequencyHz, 0.20 * frequencyHz, frequencyHz);
+			filterCutoffHz = 0.01 * frequencyHz;
 			break;
+        case CUSTOM_CUTOFF_HZ:
+            break;
 	}
+    filter.setParams(kd * frequencyHz, filterCutoffHz, frequencyHz);
 
 	if (configError < OUTPUT_BOUNDS_INVALID){
 		configError = NO_ERROR;

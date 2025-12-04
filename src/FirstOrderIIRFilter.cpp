@@ -28,8 +28,8 @@ void FirstOrderIIRFilter::reset(){
     output = 0;
 }
 
-void FirstOrderIIRFilter::setParams(double gain, double cutoffFreqRadSec, double samplingFreqHz){
-    double a1 = expf(-cutoffFreqRadSec / samplingFreqHz);
+void FirstOrderIIRFilter::setParams(double gain, double cutoffFreqHz, double samplingFreqHz){
+    double a1 = expf(- 2 * M_PI * cutoffFreqHz / samplingFreqHz);
     
 	//Calculate coefficients scaled by PARAM_MULT
 	aCoefficient = (int32_t)(a1* SCALING_MULT);

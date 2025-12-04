@@ -44,7 +44,8 @@ enum DerivativeFiltering{
 	NO_FILTERING,
 	LOW_FILTERING,
 	MEDIUM_FILTERING,
-	HIGH_FILTERING
+	HIGH_FILTERING,
+    CUSTOM_CUTOFF_HZ
 };
 
 enum ConfigError{
@@ -62,7 +63,7 @@ class ArduinoPID{
 	
 	public:
 
-	ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering = LOW_FILTERING);
+	ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering = LOW_FILTERING, float filterCutoffHz = 1.0);
 	void setParameters(float kp, float ki, float kd);
 	void setParameters(PIDGains gains);
 	int16_t compute(int16_t setpoint, int16_t measurement);
@@ -77,6 +78,7 @@ class ArduinoPID{
 	ConfigError configError;
 	int64_t minOutput, maxOutput;
 	FirstOrderIIRFilter filter;
+    float filterCutoffHz;
 	int32_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
 	int64_t integratorSum;
