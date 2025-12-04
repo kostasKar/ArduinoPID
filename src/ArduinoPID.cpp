@@ -109,7 +109,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 
     //Output clamping and integrator update with back-calculation
 	if(output > maxOutput){
-        integratorSum += (maxOutput - output); 
+        integratorSum -= (output - maxOutput); 
         if (integratorSum < 0) integratorSum = 0;
 		output = maxOutput;
 	} else if (output < minOutput){
