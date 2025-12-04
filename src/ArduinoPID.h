@@ -11,7 +11,6 @@
 
 #include <inttypes.h>
 #include "Arduino.h"
-#include "DerivativeFiltered.h"
 #include "FirstOrderIIRFilter.h"
 #include "PIDGains.h"
 
