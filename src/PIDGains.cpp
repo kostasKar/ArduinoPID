@@ -2,18 +2,20 @@
 #include <EEPROM.h>
 #include "crc.h"
 
-void PIDGains::saveToEEPROM(int startAddress){
+void PIDGains::saveToEEPROM(int slot){
     float gains[3] = {kp, ki, kd};
-    EEPROM.put(startAddress + 4, gains);
+    int startAddress = slot * (sizeof(gains) + sizeof(int));
+    EEPROM.put(startAddress, gains);
     int crc = calcrc((char *)gains, sizeof(gains));
-    EEPROM.put(startAddress, crc);
+    EEPROM.put(startAddress + sizeof(gains), crc);
 }
-bool PIDGains::readFromEEPROM(int startAddress){
+
+bool PIDGains::readFromEEPROM(int slot){
     float gains[3];
     int savedCrc, calculatedCrc;
-
-    EEPROM.get(startAddress + 4, gains);
-    EEPROM.get(startAddress, savedCrc);
+    int startAddress = slot * (sizeof(gains) + sizeof(int));
+    EEPROM.get(startAddress, gains);
+    EEPROM.get(startAddress + sizeof(gains), savedCrc);
     calculatedCrc = calcrc((char *)gains, sizeof(gains));
 
     if (calculatedCrc != savedCrc) {
