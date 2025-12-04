@@ -29,6 +29,9 @@
  *  During operation, the onboard LED is on when the controller is within configurable limits from the setpoint.
  *  Additionally to the STEPS/DIR interface, the setpoint can be set by sending an integer (position setpoint in steps units) through Serial
  *  
+ * EXTERNAL LIB DEPENDENCIES: 
+ *  - pololu/FastGPIO 
+ * 
  */
 
 

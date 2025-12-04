@@ -60,6 +60,11 @@
  *  - EXT_AUTOTUNE: an additional button to trigger autotuning, useful
  *    if such a button is desired on the clock chassis.
  *  
+ * 
+ * EXTERNAL LIB DEPENDENCIES: 
+ *  - makuna/RTC library if USE_RTC is true
+ *  - pololu/FastGPIO 
+ * 
  */
 
 
