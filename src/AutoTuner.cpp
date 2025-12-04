@@ -118,12 +118,11 @@ void AutoTuner::analyzeMeasurements(){
 	Serial.print(F("Average Amplitude: ")); Serial.println(averageAmplitude);
 	
 	double Pu = averagePeriod / 1000000; //in sec
-	//double Ku = (4.0 * (_outputStep)) / (3.1415 * averageAmplitude);
-	double Ku = (4.0 * (outputStep)) / (M_PI * sqrt(square(averageAmplitude) - square(hysteresis)));
+	double Ku = (4.0 * outputStep) / (M_PI * sqrt(square(averageAmplitude) - square(hysteresis)));
 	
 	Kp = 0.6 * Ku;
-	Ki = 1.2 * Ku / (Pu);
-	Kd = 0.075 * Ku * Pu;
+	Ki = Kp / (0.5 * Pu);
+	Kd = Kp * (0.125 * Pu);
 	
 	Serial.print(F("Kp: ")); Serial.println(Kp);
 	Serial.print(F("Ki: ")); Serial.println(Ki);  
