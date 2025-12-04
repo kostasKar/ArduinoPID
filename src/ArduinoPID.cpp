@@ -20,7 +20,6 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
 	}
 	minOutput = int64_t(min) * PARAM_MULT;
 	maxOutput = int64_t(max) * PARAM_MULT;
-    antiWindupNeeded = false;
     executionTimer = 0;
     executionIntervalUs = 1000000 / freqHz;
 }
@@ -69,7 +68,6 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 	}
 
     reset();
-
 }
 
 void ArduinoPID::reset(){
@@ -95,32 +93,28 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	//Calculating Proportional term:
 	output += pGain * err;
 
-    //Adding integral term:
-	output += integratorSum;
-
 	//Calculating Derivative term:
 	if (dGain != 0){
-        int32_t measurementDiff = (int16_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
+        int32_t diff = (int16_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
         lastMeasurement = measurement;
 		if (derivativeFiltering == NO_FILTERING){
-			output -= dGain * measurementDiff;
+			output -= dGain * diff;
 		} else {
-			output -= filter.run(measurementDiff);
+			output -= filter.run(diff);
 		}
 	}
 	
-	if(output > maxOutput){
-		output = maxOutput;
-        antiWindupNeeded = (err > 0);
-	} else if (output < minOutput){
-		output = minOutput;
-        antiWindupNeeded = (err < 0);
-	} else {
-        antiWindupNeeded = false;
-    }
+    //Adding integral term:
+	output += integratorSum;
 
-    //Updating integral with anti-windup clamping 
-    if (!antiWindupNeeded){
+    //Output clamping and integrator update with back-calculation
+	if(output > maxOutput){
+        integratorSum += (maxOutput - output) >> 1; 
+		output = maxOutput;
+	} else if (output < minOutput){
+        integratorSum += (minOutput - output) >> 1; 
+		output = minOutput;
+	} else {
         integratorSum += iGain * err;
     }
 
