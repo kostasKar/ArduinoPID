@@ -87,7 +87,7 @@ void ArduinoPID::reset(int16_t currentMeasurement){
 	integratorSum = 0;
 }	
 
-ConfigError ArduinoPID::getError(){
+ConfigError ArduinoPID::getConfigError(){
 	return configError;
 }
 

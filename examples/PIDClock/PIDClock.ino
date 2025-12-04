@@ -214,8 +214,8 @@ void resetPosition(){
 }
 
 void checkPIDError(){
-    if (pid.getError() != NO_ERROR) {
-        Serial.print(F("PID configuration error: ")); Serial.println(pid.getError());
+    if (pid.getConfigError() != NO_ERROR) {
+        Serial.print(F("PID configuration error: ")); Serial.println(pid.getConfigError());
     } else {
         Serial.println(F("PID configured successfully"));
     }
