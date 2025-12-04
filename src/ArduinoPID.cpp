@@ -18,8 +18,8 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
 	if (min >= max){
 		configError = OUTPUT_BOUNDS_INVALID;
 	}
-	minOutput = int64_t(min) * PARAM_MULT;
-	maxOutput = int64_t(max) * PARAM_MULT;
+	minOutput = int64_t(min) * SCALING_MULT;
+	maxOutput = int64_t(max) * SCALING_MULT;
     executionTimer = 0;
     executionIntervalUs = 1000000 / freqHz;
 }
@@ -45,9 +45,9 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 		return;
 	}
 
-	pGain = (int32_t)(kp * PARAM_MULT);
-	iGain = (int32_t)((ki / frequencyHz) * PARAM_MULT);
-	dGain = (int32_t)((kd * frequencyHz) * PARAM_MULT);
+	pGain = (int32_t)(kp * SCALING_MULT);
+	iGain = (int32_t)((ki / frequencyHz) * SCALING_MULT);
+	dGain = (int32_t)((kd * frequencyHz) * SCALING_MULT);
 
 	switch (derivativeFiltering){
 		case NO_FILTERING:
@@ -121,8 +121,8 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
     }
 
 	// Remove the integer scaling factor and apply fair rounding
-	int16_t rval = output >> PARAM_SHIFT;
-	if (output & (0x1ULL << (PARAM_SHIFT - 1))) {
+	int16_t rval = output >> SCALING_SHIFT;
+	if (output & (0x1ULL << (SCALING_SHIFT - 1))) {
 		rval++;
 	}
 
