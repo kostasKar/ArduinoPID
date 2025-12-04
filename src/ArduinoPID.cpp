@@ -81,9 +81,9 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
     reset();
 }
 
-void ArduinoPID::reset(){
+void ArduinoPID::reset(int16_t currentMeasurement){
 	filter.reset();
-	lastMeasurement = 0;
+	lastMeasurement = currentMeasurement;
 	integratorSum = 0;
 }	
 

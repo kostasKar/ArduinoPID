@@ -66,7 +66,7 @@ class ArduinoPID{
 	void setParameters(float kp, float ki, float kd);
 	void setParameters(PIDGains gains);
 	int16_t compute(int16_t setpoint, int16_t measurement);
-	void reset();
+	void reset(int16_t currentMeasurement = 0);
 	ConfigError getError();
     bool shouldExecuteInLoop();
 	
