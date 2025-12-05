@@ -60,24 +60,23 @@ void test_pid_anti_windup(){
     TEST_ASSERT_EQUAL(20, pid.compute(10, 0)); 
 }
 
-void test_iir_filter(){
+void test_derivative_filter(){
+    ArduinoPID pid(10.0, -1000, 1000, CUSTOM_CUTOFF_HZ, 1.0);
+    pid.setParameters(0, 0, 10.0);
     FirstOrderIIRFilter filter;
-    filter.setParams(100, 1.0, 10.0); // gain=1, cutoff=1Hz, sampling=10Hz
-    TEST_ASSERT_EQUAL(466, filter.run(10));  //raw would be 1000
-    TEST_ASSERT_EQUAL(247, filter.run(0)); 
-    TEST_ASSERT_EQUAL(131, filter.run(0));
-    TEST_ASSERT_EQUAL(69, filter.run(0));
-    TEST_ASSERT_EQUAL(36, filter.run(0));
-    TEST_ASSERT_EQUAL(19, filter.run(0));
-    TEST_ASSERT_EQUAL(10, filter.run(0));
-    TEST_ASSERT_EQUAL(5, filter.run(0));
-    TEST_ASSERT_EQUAL(2, filter.run(0));
-    TEST_ASSERT_EQUAL(1, filter.run(0));
-    TEST_ASSERT_EQUAL(0, filter.run(0));
-    TEST_ASSERT_EQUAL(0, filter.run(0));
-}   
+    filter.setParams(100, 1.0, 10.0, 256);
+    TEST_ASSERT_EQUAL(pid.compute(0, -10), filter.run(10) / 256);  
+} 
 
-
+void test_pid_value_limits(){
+    ArduinoPID pid(1, INT16_MIN, INT16_MAX, LOW_FILTERING);
+    pid.setParameters(255, 255, 255);
+    TEST_ASSERT_EQUAL(INT16_MAX, pid.compute(INT16_MAX, 0));
+    TEST_ASSERT_EQUAL(INT16_MAX, pid.compute(INT16_MAX, 0));  
+    TEST_ASSERT_EQUAL(INT16_MAX, pid.compute(INT16_MAX, 0)); 
+    TEST_ASSERT_EQUAL(INT16_MIN, pid.compute(INT16_MIN, 0)); 
+    TEST_ASSERT_EQUAL(INT16_MIN, pid.compute(INT16_MIN, 0)); 
+}
 
 
 
@@ -98,6 +97,7 @@ int main(int argc, char **argv) {
     RUN_TEST(test_pid_high_gains);
     RUN_TEST(test_pid_all_gains);
     RUN_TEST(test_pid_anti_windup);
-    RUN_TEST(test_iir_filter);
+    RUN_TEST(test_derivative_filter);
+    RUN_TEST(test_pid_value_limits);
     return UNITY_END();
 }
