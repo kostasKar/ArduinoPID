@@ -57,6 +57,8 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
 	iGain = (int32_t)((ki / frequencyHz) * SCALING_MULT);
 	dGain = (int32_t)((kd * frequencyHz) * SCALING_MULT);
 
+	onlyPI = (dGain == 0);
+
 	switch (derivativeFiltering){
 		case NO_FILTERING:
 			break;
@@ -104,7 +106,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	int64_t output = pGain * err;
 
 	//Calculating Derivative term:
-	if (dGain != 0){
+	if (!onlyPI){
         int16_t diff = (int16_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
         lastMeasurement = measurement;
 		if (derivativeFiltering == NO_FILTERING){

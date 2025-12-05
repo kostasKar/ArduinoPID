@@ -81,6 +81,7 @@ class ArduinoPID{
 	int32_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
 	int64_t integratorSum;
+	bool onlyPI;
 
     uint32_t executionTimer;
     uint32_t executionIntervalUs;
