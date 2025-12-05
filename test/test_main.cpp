@@ -60,6 +60,24 @@ void test_pid_anti_windup(){
     TEST_ASSERT_EQUAL(20, pid.compute(10, 0)); 
 }
 
+void test_iir_filter(){
+    FirstOrderIIRFilter filter;
+    filter.setParams(100, 1.0, 10.0); // gain=1, cutoff=1Hz, sampling=10Hz
+    TEST_ASSERT_EQUAL(466, filter.run(10));  //raw would be 1000
+    TEST_ASSERT_EQUAL(247, filter.run(0)); 
+    TEST_ASSERT_EQUAL(131, filter.run(0));
+    TEST_ASSERT_EQUAL(69, filter.run(0));
+    TEST_ASSERT_EQUAL(36, filter.run(0));
+    TEST_ASSERT_EQUAL(19, filter.run(0));
+    TEST_ASSERT_EQUAL(10, filter.run(0));
+    TEST_ASSERT_EQUAL(5, filter.run(0));
+    TEST_ASSERT_EQUAL(2, filter.run(0));
+    TEST_ASSERT_EQUAL(1, filter.run(0));
+    TEST_ASSERT_EQUAL(0, filter.run(0));
+    TEST_ASSERT_EQUAL(0, filter.run(0));
+}   
+
+
 
 
 
@@ -80,5 +98,6 @@ int main(int argc, char **argv) {
     RUN_TEST(test_pid_high_gains);
     RUN_TEST(test_pid_all_gains);
     RUN_TEST(test_pid_anti_windup);
+    RUN_TEST(test_iir_filter);
     return UNITY_END();
 }
