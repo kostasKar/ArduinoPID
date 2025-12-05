@@ -15,7 +15,7 @@ ArduinoPID is an optimized PID controller library with an integrated autotuner f
 
 ## Performance
 
-* calculate() executes in 44 μs on an Arduino Uno with all features enabled.
+* calculate() executes in 44 μs on an ATmega328P with all features enabled.
 * Tested up to 10 kHz control loop frequency
 
 ```shouldExecuteInLoop()``` is to be called inside ```loop()``` and checks ```micros()```.
