@@ -9,7 +9,7 @@ class FirstOrderIIRFilter{
     public:
     FirstOrderIIRFilter();
     //scalingMultiplier is not reverted internally, user must descale
-    void setParams(double gain, double cutoffFreqHz, double samplingFreqHz, double scalingMultiplier);
+    void setParams(double gain, double cutoffFreqHz, double samplingFreqHz, int scalingMultiplierBits);
     int32_t run(int32_t input);
     int32_t getLastOutput(); //without recalculating it and thus without affecting the integrator state
     void reset();
@@ -18,6 +18,7 @@ class FirstOrderIIRFilter{
     int32_t output;
     int32_t aCoefficient;
     int32_t bCoefficient;
+    int scalingBits;
     
 };
 
