@@ -84,9 +84,9 @@ if (err != NO_ERROR) {
  #include <AutoTuner.h>
 
  AutoTuner autoTuner(
-    AUTOTUNER_SETPOINT,     //Setpoint around which the plant will oscillate
-    AUTOTUNER_OUTPUT_STEP,  //The output to the actuator (positive and negative)
-    AUTOTUNER_HYSTERESIS    //A small hysteresis makes the method more robust (setpoint domain)
+    100,    //Setpoint around which the plant will oscillate
+    250,    //The output to the actuator (positive and negative)
+    5       //A small hysteresis makes the method more robust (setpoint domain)
  );
  ```
 
