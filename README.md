@@ -189,11 +189,11 @@ pid.reset(currentMeasurement);
  ```
 
  ## Examples
- A complete implementation of a DC motor position controller.
- The sketch drives a dc motor using an H-bridge and PWM output
- The position feedback is provided by a quadrature encoder to external interrupt pins
- The controller is driven by 3 input pins: STEPS, DIR, ENABLE - an industry standard
- Position setpoints can be also sent through Serial
+ A complete implementation of a DC motor position controller<br>
+ The sketch drives a dc motor using an H-bridge and PWM output<br>
+ The position feedback is provided by a quadrature encoder to external interrupt pins<br>
+ The controller is driven by 3 input pins: STEPS, DIR, ENABLE - an industry standard<br>
+ Position setpoints can be also sent through Serial<br>
 
 
 
