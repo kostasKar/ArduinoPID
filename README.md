@@ -22,7 +22,7 @@ ArduinoPID is an optimized PID controller library with an integrated autotuner f
 
 > **Note:** Integral anti-windup is enabled in all scenarios.
 
-```shouldExecuteInLoop()``` is to be called inside ```loop()``` and checks ```micros()```. 
+```shouldExecuteInLoop()``` is to be called inside ```loop()``` and checks ```micros()```.<br>
 ```compute(setpoint, measurement)``` called directly by the application 
 
 
