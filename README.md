@@ -24,10 +24,6 @@ The duration of a call to `compute()` was benchmarked on ATmega328P (Arduino UNO
 
 > **Note:** Integral anti-windup is enabled in all scenarios.
 
-```shouldExecuteInLoop()``` is to be called inside ```loop()``` and checks ```micros()``` to maintain timing.<br>
-```compute(setpoint, measurement)``` called directly by the application 
-
-
  ## Usage
 
  ### 1. Create a PID controller
@@ -37,6 +33,7 @@ The duration of a call to `compute()` was benchmarked on ATmega328P (Arduino UNO
 
 // Arguments:
 // (sampling frequency Hz, outputMin, outputMax, derivativeFiltering, customCutoffHz)
+
 ArduinoPID pid(
     1000.0,          // 1 kHz sampling rate
     -255, 255,       // output limits
@@ -54,10 +51,10 @@ ArduinoPID pid(
 
  Or using a PIDGains object:
 
- '''
+ ```
 PIDGains gains = {1.2f, 0.5f, 0.0f};
 pid.setParameters(gains);
- '''
+ ```
 
 ### 3. Autotuning
 
@@ -73,14 +70,15 @@ pid.setParameters(gains);
  );
  ```
 
- Initialize for running the autotuning procedure:
+ Initialize before running the autotuning procedure
 
  ```
  autoTuner.init();
  ``` 
 
- The autotuning loop (appApplyOutput is user defined and drives the actuator)
- measurement is the current measurement
+ The autotuning loop 
+ - appApplyOutput is user defined and drives the actuator
+ - measurement is the current measurement
 
  ```
  while (!autotuner.isFinished()){
@@ -105,6 +103,17 @@ pid.setParameters(gains);
  Check for configuration errors. The controller will not run if any
 
 ```
+//The possible errors:
+enum ConfigError{
+	NO_ERROR,
+	PARAMS_UNCONFIGURED,
+	KP_OUT_OF_RANGE,
+	KI_OUT_OF_RANGE,
+	KD_OUT_OF_RANGE,
+	OUTPUT_BOUNDS_INVALID,
+	SAMPLING_FREQ_ERROR
+};
+
 ConfigError err = pid.getConfigError();
 if (err != NO_ERROR) {
     Serial.println("PID configuration error");
@@ -115,6 +124,7 @@ if (err != NO_ERROR) {
 
  Call shouldExecuteInLoop() inside loop().
  When it returns true, call compute().
+ Alternatively, the user may handle timing (e.g. within an ISR) and directly call compute();
 
 ```
 void loop() {
@@ -126,9 +136,9 @@ void loop() {
 
  ### 4. Reset the controller
 
- The internal state of the controller can be reset.
+ The internal state of the controller can be reset if needed.
  Optionally, the user can apply the current measurement during reset so that 
- there is no derivative kick if it is reset at a non-zero position
+ there is no derivative kick if reset is called at a non-zero position
 
 ```
 pid.reset();
