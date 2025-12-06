@@ -56,6 +56,26 @@ PIDGains gains = {1.2f, 0.5f, 0.0f};
 pid.setParameters(gains);
  ```
 
+Check for configuration errors. The controller will not run if any
+
+```
+//The possible errors:
+enum ConfigError{
+	NO_ERROR,
+	PARAMS_UNCONFIGURED,
+	KP_OUT_OF_RANGE,
+	KI_OUT_OF_RANGE,
+	KD_OUT_OF_RANGE,
+	OUTPUT_BOUNDS_INVALID,
+	SAMPLING_FREQ_ERROR
+};
+
+ConfigError err = pid.getConfigError();
+if (err != NO_ERROR) {
+    Serial.println("PID configuration error");
+}
+```
+
 ### 3. Autotuning
 
  Create and configure an Autotuner object:
@@ -101,27 +121,9 @@ pid.setParameters(gains);
  }
  ```
 
- Check for configuration errors. The controller will not run if any
 
-```
-//The possible errors:
-enum ConfigError{
-	NO_ERROR,
-	PARAMS_UNCONFIGURED,
-	KP_OUT_OF_RANGE,
-	KI_OUT_OF_RANGE,
-	KD_OUT_OF_RANGE,
-	OUTPUT_BOUNDS_INVALID,
-	SAMPLING_FREQ_ERROR
-};
 
-ConfigError err = pid.getConfigError();
-if (err != NO_ERROR) {
-    Serial.println("PID configuration error");
-}
-```
-
- ### 3. Run inside loop()
+ ### 4. Run inside loop()
 
  Call shouldExecuteInLoop() inside loop().
  When it returns true, call compute().
@@ -135,7 +137,7 @@ void loop() {
 }
 ```
 
- ### 4. Reset the controller
+ ### 5. Reset the controller
 
  The internal state of the controller can be reset if needed.
  Optionally, the user can apply the current measurement during reset so that 
