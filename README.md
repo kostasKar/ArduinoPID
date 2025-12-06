@@ -147,7 +147,6 @@ void loop() {
 pid.reset();
 pid.reset(currentMeasurement);
 ```
- ---
 
  ### Derivative Filtering Options
 
@@ -159,7 +158,6 @@ pid.reset(currentMeasurement);
 | `HIGH_FILTERING`   | heavy filtering                      |
 | `CUSTOM_CUTOFF_HZ` | Use custom cutoff frequency          |
 
- ---
 
  ### A note on variables affected by ISRs
  
