@@ -99,7 +99,7 @@ if (err != NO_ERROR) {
  The autotuning loop 
  - appApplyOutput is user defined and drives the actuator
  - measurement is a variable carrying the current measurement
- 
+
  When finished, a report will be printed to Serial
 
  ```
@@ -146,6 +146,7 @@ void loop() {
 
 ```
 pid.reset();
+//or
 pid.reset(currentMeasurement);
 ```
 
