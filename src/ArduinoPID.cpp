@@ -74,7 +74,7 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
         case CUSTOM_CUTOFF_HZ:
             break;
 	}
-    filter.setParams(kd * frequencyHz, filterCutoffHz, frequencyHz, SCALING_SHIFT);
+    filter.setParams(kd * frequencyHz, filterCutoffHz, frequencyHz);
 
 	if (configError < OUTPUT_BOUNDS_INVALID){
 		configError = NO_ERROR;
