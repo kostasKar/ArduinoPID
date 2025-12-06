@@ -12,13 +12,17 @@ ArduinoPID is an optimized PID controller library with an integrated autotuner f
 * Autotuner (relay method) with analysis output
 * floating point controller gains stored in EEPROM with CRC. 
 
+## `compute()` Performance Benchmark
 
-## Performance
+| Scenario                                | Time (µs) |
+| ----------------------------------------| --------- |
+| PID control — derivative **filtered**   | 43.68     |
+| PID control — derivative **unfiltered** | 36.96     |
+| PI control (Kd = 0)                     | 27.84     |
 
-* calculate() executes in 44 μs on an ATmega328P with all features enabled.
-* Tested up to 10 kHz control loop frequency
+> **Note:** Integral anti-windup is enabled in all scenarios.
 
-```shouldExecuteInLoop()``` is to be called inside ```loop()``` and checks ```micros()```.
+```shouldExecuteInLoop()``` is to be called inside ```loop()``` and checks ```micros()```. 
 ```compute(setpoint, measurement)``` called directly by the application 
 
 
