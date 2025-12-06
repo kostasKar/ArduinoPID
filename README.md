@@ -78,7 +78,8 @@ pid.setParameters(gains);
 
  The autotuning loop 
  - appApplyOutput is user defined and drives the actuator
- - measurement is the current measurement
+ - measurement is a variable carrying the current measurement
+ When finished, a report will be printed to Serial
 
  ```
  while (!autotuner.isFinished()){
@@ -86,13 +87,13 @@ pid.setParameters(gains);
  }
  ```
 
- Get the autotuner results PIDGains object. Store them to EEPROM
+ Get the autotuner result PIDGains object. Store them to EEPROM
  ```
  PIDGains pidGains = autotuner.getPIDGains();
  pidGains.saveToEEPROM();
  ```
 
- The application can check for existing gains in eeprom to avoid autotuning on each execution:
+ The application can check for saved gains in eeprom to avoid autotuning on each boot:
  ```
  PIDGains pidGains;
  if (pidGains.readFromEEPROM()){
@@ -124,7 +125,7 @@ if (err != NO_ERROR) {
 
  Call shouldExecuteInLoop() inside loop().
  When it returns true, call compute().
- Alternatively, the user may handle timing (e.g. within an ISR) and directly call compute();
+ Alternatively, the user may handle timing (e.g. within an ISR) and directly call compute()
 
 ```
 void loop() {
@@ -157,6 +158,33 @@ pid.reset(currentMeasurement);
 | `CUSTOM_CUTOFF_HZ` | Use custom cutoff frequency          |
 
  ---
+
+ ## A note on variables affected by ISRs
+ 
+ If a variable is manipulated by an ISR and main code, it should be 
+ declared as volatile. If its size is more than 8 bits, reading it from 
+ outside of an ISR should be enclosed in an ATOMIC block:
+
+ ```
+#include <util/atomic.h>
+
+ //volatile declaration of variable:
+ volatile int16_t setpoint = 0;
+
+ //ISR that increments it:
+ ISR(INT0_vect) {
+    setpoint++;
+ }
+
+ //reading it from main code:
+ int16_t setpoint_copy;
+
+ ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+    setpoint_copy = setpoint;
+ }
+ 
+ //use the copyied value safely
+ ```
 
 
 ## License
