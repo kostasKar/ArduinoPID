@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #include <FastGPIO.h>
 #include <ArduinoPID.h>
@@ -9,7 +8,6 @@
 
 
 /*
- *  Kostas Karouzos 2020 
  * 
  *  PID position control of DC motor 
  *  The motor is driven using an H-bridgr as the DRV8871, with two signals (CW, CCW) used in Sign-Magnitude mode.

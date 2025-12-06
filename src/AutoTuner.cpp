@@ -1,10 +1,3 @@
-/*
- * AutoTune.cpp
- *
- * Created: 14-Dec-18 8:25:36 PM
- *  Author: kostas
- */ 
-
 #include <Arduino.h>
 #include "AutoTuner.h"
 #include <math.h> 

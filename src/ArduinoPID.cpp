@@ -1,10 +1,3 @@
-/*
- * ArduinoPID.cpp
- *
- * Created: 09-Oct-19 8:35:00 PM
- *  Author: kostas
- */ 
-
 #include "ArduinoPID.h"
 #include <util/atomic.h>
 

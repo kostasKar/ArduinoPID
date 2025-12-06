@@ -1,11 +1,3 @@
-/*
- * IntPID.h
- *
- * Created: 09-Oct-19 8:34:48 PM
- *  Author: kostas
- */ 
-
-
 #ifndef INTPID_H_
 #define INTPID_H_
 

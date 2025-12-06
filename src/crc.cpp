@@ -1,10 +1,3 @@
-/*
- * crc.cpp
- *
- * Created: 09-Oct-19 11:21:06 PM
- *  Author: kostas
- */ 
-
 #include "crc.h"
 
 
