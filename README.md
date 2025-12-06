@@ -161,7 +161,7 @@ pid.reset(currentMeasurement);
 
  ## A note on variables affected by ISRs
  
- If a variable is manipulated by an ISR and main code, it should be 
+ If a variable is manipulated both by an ISR and main code, it should be 
  declared as volatile. If its size is more than 8 bits, reading it from 
  outside of an ISR should be enclosed in an ATOMIC block:
 
@@ -182,8 +182,8 @@ pid.reset(currentMeasurement);
  ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
     setpoint_copy = setpoint;
  }
- 
- //use the copyied value safely
+
+ //use the copied value safely
  ```
 
 
