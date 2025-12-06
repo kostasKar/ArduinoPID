@@ -147,7 +147,7 @@ pid.reset(currentMeasurement);
 ```
  ---
 
- ## Derivative Filtering Options
+ ### Derivative Filtering Options
 
 | Option             | Description                          |
 | ------------------ | ------------------------------------ |
@@ -159,7 +159,7 @@ pid.reset(currentMeasurement);
 
  ---
 
- ## A note on variables affected by ISRs
+ ### A note on variables affected by ISRs
  
  If a variable is manipulated both by an ISR and main code, it should be 
  declared as volatile. If its size is more than 8 bits, reading it from 
@@ -185,6 +185,14 @@ pid.reset(currentMeasurement);
 
  //use the copied value safely
  ```
+
+ ## Examples
+ A complete implementation of a DC motor position controller.
+ The sketch drives a dc motor using an H-bridge and PWM output
+ The position feedback is provided by a quadrature encoder to external interrupt pins
+ The controller is driven by 3 input pins: STEPS, DIR, ENABLE - an industry standard
+ Position setpoints can be also sent through Serial
+
 
 
 ## License
