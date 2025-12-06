@@ -12,7 +12,7 @@ ArduinoPID is an optimized PID controller library with an integrated autotuner f
 * Autotuner (relay method) with analysis output
 * floating point controller gains stored in EEPROM with CRC. 
 
-## `compute()` Performance Benchmark on ATmega328
+## `compute()` Performance Benchmark on ATmega328P
 
 | Scenario                                | Time (µs) |
 | ----------------------------------------| --------- |
