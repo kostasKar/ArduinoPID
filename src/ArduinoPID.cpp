@@ -124,7 +124,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
         if (integratorSum > 0) integratorSum = 0;
 		output = minOutput;
 	} else {
-        integratorSum += iGain * err;                                           //sum: i24+i32->i33
+        integratorSum += iGain * err;                                           //sum: i24+(i16*i16->i32)->i33
     }
 
 	// Remove the integer scaling factor and apply fair rounding
