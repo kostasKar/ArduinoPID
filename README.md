@@ -18,9 +18,9 @@ The duration of a call to `compute()` was benchmarked on ATmega328P (Arduino UNO
 
 | Scenario                                | Time (µs) |
 | ----------------------------------------| --------- |
-| PID control — derivative **filtered**   | 39.20     |
-| PID control — derivative **unfiltered** | 32.32     |
-| PI control (Kd = 0)                     | 16.96     |
+| PID control — derivative **filtered**   | 42.72     |
+| PID control — derivative **unfiltered** | 36.00     |
+| PI control (Kd = 0)                     | 22.72     |
 
 > **Note:** Integral anti-windup is enabled in all scenarios.
 

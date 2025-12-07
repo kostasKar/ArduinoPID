@@ -72,7 +72,7 @@ class ArduinoPID{
     float filterCutoffHz;
 	int32_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
-	int32_t integratorSum;
+	int64_t integratorSum;
 	bool onlyPI;
 
     uint32_t executionTimer;
