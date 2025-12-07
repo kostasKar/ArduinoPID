@@ -62,7 +62,7 @@ void test_pid_anti_windup(){
 
 void test_iir_filter(){
     FirstOrderIIRFilter filter;
-    filter.setParams(100, 1.0, 10.0, 8); // gain=1, cutoff=1Hz, sampling=10Hz
+    filter.setParams(100, 1.0, 10.0); // gain=1, cutoff=1Hz, sampling=10Hz
     TEST_ASSERT_EQUAL(466, filter.run(10) >> 8);  //raw would be 1000
     TEST_ASSERT_EQUAL(247, filter.run(0) >> 8); 
     TEST_ASSERT_EQUAL(131, filter.run(0) >> 8);
@@ -81,7 +81,7 @@ void test_derivative_filter(){
     ArduinoPID pid(10.0, -1000, 1000, CUSTOM_CUTOFF_HZ, 1.0);
     pid.setParameters(0, 0, 10.0);
     FirstOrderIIRFilter filter;
-    filter.setParams(100, 1.0, 10.0, 8);
+    filter.setParams(100, 1.0, 10.0);
     TEST_ASSERT_EQUAL(pid.compute(0, -10), filter.run(10) / 256);  
 } 
 

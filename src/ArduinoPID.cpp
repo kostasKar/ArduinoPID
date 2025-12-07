@@ -94,23 +94,25 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 	
     //wrap-safe subtraction to avoid issues with int16_t overflow
 	int16_t err =  (int16_t)(uint16_t(setpoint) - uint16_t(measurement));
+    int32_t pTerm, dTerm;
+    int64_t output;
 
 	//Calculating Proportional term:
-	int64_t output = pGain * err;
+    pTerm = pGain * err;
 
 	//Calculating Derivative term:
 	if (!onlyPI){
         int16_t diff = (int16_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
         lastMeasurement = measurement;
 		if (derivativeFiltering == NO_FILTERING){
-			output -= dGain * diff;
+			dTerm = -dGain * diff;
 		} else {
-			output -= filter.run(diff);
+			dTerm = -filter.run(diff);
 		}
 	}
 	
-    //Adding integral term:
-	output += integratorSum;
+    //Computing the output 
+    output = pTerm + dTerm + integratorSum;
 
     //Output clamping and integrator update with back-calculation
 	if(output > maxOutput){
