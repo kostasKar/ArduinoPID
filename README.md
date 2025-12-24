@@ -1,6 +1,6 @@
-# ArduinoPID
+# CorePID
 
-ArduinoPID is an optimized PID controller library with an integrated autotuner for Arduino.
+CorePID is an optimized PID controller library with an integrated autotuner for Arduino.
 ## Features
 
 * Fast, optimized, fixed point, integer-only internal arithmetic 
@@ -29,12 +29,12 @@ The duration of a call to `compute()` was benchmarked on ATmega328P (Arduino UNO
  ### 1. Create a PID controller
 
 ```
-#include <ArduinoPID.h>
+#include <CorePID.h>
 
 // Arguments:
 // (sampling frequency Hz, outputMin, outputMax, derivativeFiltering, customCutoffHz)
 
-ArduinoPID pid(
+CorePID pid(
     1000.0,          // 1 kHz sampling rate
     -255, 255,       // output limits
     LOW_FILTERING,   // derivative filtering level

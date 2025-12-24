@@ -1,9 +1,9 @@
-#include "ArduinoPID.h"
+#include "CorePID.h"
 #include <util/atomic.h>
 
 
 
-ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering, float filterCutoffHz):
+CorePID::CorePID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering, float filterCutoffHz):
 	frequencyHz(freqHz),
 	derivativeFiltering(derivFiltering), 
 	configError(PARAMS_UNCONFIGURED),
@@ -25,11 +25,11 @@ ArduinoPID::ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFilteri
     executionIntervalUs = 1000000 / freqHz;
 }
 
-void ArduinoPID::setParameters(PIDGains gains){
+void CorePID::setParameters(PIDGains gains){
 	setParameters(gains.kp, gains.ki, gains.kd);
 }
 
-void ArduinoPID::setParameters(float kp, float ki, float kd){
+void CorePID::setParameters(float kp, float ki, float kd){
 	
 	if (kp < 0 || kp > PARAM_MAX){
 		configError = KP_OUT_OF_RANGE;
@@ -76,17 +76,17 @@ void ArduinoPID::setParameters(float kp, float ki, float kd){
     reset();
 }
 
-void ArduinoPID::reset(int16_t currentMeasurement){
+void CorePID::reset(int16_t currentMeasurement){
 	filter.reset();
 	lastMeasurement = currentMeasurement;
 	integratorSum = 0;
 }	
 
-ConfigError ArduinoPID::getConfigError(){
+ConfigError CorePID::getConfigError(){
 	return configError;
 }
 
-int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
+int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
 
     if (configError != NO_ERROR){
         return 0;
@@ -137,7 +137,7 @@ int16_t ArduinoPID::compute(int16_t setpoint, int16_t measurement){
 }
 
 
-bool ArduinoPID::shouldExecuteInLoop(){
+bool CorePID::shouldExecuteInLoop(){
     uint32_t now = micros();
     if(now - executionTimer >= executionIntervalUs){
         executionTimer = now;

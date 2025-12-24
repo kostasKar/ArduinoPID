@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <FastGPIO.h>
-#include <ArduinoPID.h>
+#include <CorePID.h>
 #include <AutoTuner.h>
 #include <PIDGains.h>
 #include <util/atomic.h>
@@ -115,7 +115,7 @@ volatile int16_t positionSetpoint = 0;
 
 PIDGains pidGains;
 AutoTuner autoTuner(AUTOTUNER_SETPOINT, AUTOTUNER_OUTPUT_STEP, AUTOTUNER_HYSTERESIS);
-ArduinoPID pid(PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, MEDIUM_FILTERING);
+CorePID pid(PID_FREQ_HZ, -TIMER_TOP, TIMER_TOP, MEDIUM_FILTERING);
 PulseScaler scaler(SECS_PER_ROTATION, STEPS_PER_ROTATION);
 
 #if USE_RTC

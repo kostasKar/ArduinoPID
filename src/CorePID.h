@@ -1,5 +1,5 @@
-#ifndef INTPID_H_
-#define INTPID_H_
+#ifndef COREPID_H_
+#define COREPID_H_
 
 #include <inttypes.h>
 #include "Arduino.h"
@@ -50,11 +50,11 @@ enum ConfigError{
 };
 
 
-class ArduinoPID{
+class CorePID{
 	
 	public:
 
-	ArduinoPID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering = LOW_FILTERING, float filterCutoffHz = 1.0);
+	CorePID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering = LOW_FILTERING, float filterCutoffHz = 1.0);
 	void setParameters(float kp, float ki, float kd);
 	void setParameters(PIDGains gains);
 	int16_t compute(int16_t setpoint, int16_t measurement);
