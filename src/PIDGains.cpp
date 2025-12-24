@@ -1,12 +1,13 @@
 #include "PIDGains.h"
 #include <EEPROM.h>
 
-void PIDGains::saveToEEPROM(int slot){
+bool PIDGains::saveToEEPROM(int slot){
     float gains[3] = {kp, ki, kd};
     int startAddress = slot * (sizeof(gains) + sizeof(int));
     EEPROM.put(startAddress, gains);
     int crc = calcrc((char *)gains, sizeof(gains));
     EEPROM.put(startAddress + sizeof(gains), crc);
+    return readFromEEPROM(slot); //verify
 }
 
 bool PIDGains::readFromEEPROM(int slot){
