@@ -1,12 +1,12 @@
 #include <unity.h>
-#include "ArduinoPID.h"
+#include "CorePID.h"
 
 
 
 
 
 void test_pid_basic(){
-    ArduinoPID pid(1, -100, 100, LOW_FILTERING);
+    CorePID pid(1, -100, 100, LOW_FILTERING);
     pid.setParameters(1.0, 0.1, 0.1);
     TEST_ASSERT_EQUAL(50, pid.compute(50, 0));
     TEST_ASSERT_EQUAL(100, pid.compute(1000, 0));     
@@ -14,7 +14,7 @@ void test_pid_basic(){
 }
 
 void test_pid_wrap_high(){
-    ArduinoPID pid(1, -100, 100, LOW_FILTERING);
+    CorePID pid(1, -100, 100, LOW_FILTERING);
     pid.setParameters(1.0, 0.1, 0.1);
     int16_t sp = INT16_MAX;
     int16_t meas = sp + 1;
@@ -23,7 +23,7 @@ void test_pid_wrap_high(){
 }
 
 void test_pid_wrap_low(){
-    ArduinoPID pid(1, -100, 100, LOW_FILTERING);
+    CorePID pid(1, -100, 100, LOW_FILTERING);
     pid.setParameters(1.0, 0.1, 0.1);
     int16_t sp = INT16_MIN;
     int16_t meas = sp - 1;
@@ -32,7 +32,7 @@ void test_pid_wrap_low(){
 }
 
 void test_pid_high_gains(){
-    ArduinoPID pid(1, -1000, 1000, LOW_FILTERING);
+    CorePID pid(1, -1000, 1000, LOW_FILTERING);
     pid.setParameters(255, 0.1, 0.1);
     int16_t sp = INT16_MAX;
     TEST_ASSERT_EQUAL(1000, pid.compute(sp, 0));    
@@ -41,7 +41,7 @@ void test_pid_high_gains(){
 }
 
 void test_pid_all_gains(){
-    ArduinoPID pid(1, -100, 100, NO_FILTERING);
+    CorePID pid(1, -100, 100, NO_FILTERING);
     pid.setParameters(1, 1, 1);               // p  i  d  
     TEST_ASSERT_EQUAL(1, pid.compute(1, 0));  // 1  0  0
     TEST_ASSERT_EQUAL(2, pid.compute(1, 0));  // 1  1  0
@@ -52,7 +52,7 @@ void test_pid_all_gains(){
 }
 
 void test_pid_anti_windup(){
-    ArduinoPID pid(1, -100, 100, NO_FILTERING);
+    CorePID pid(1, -100, 100, NO_FILTERING);
     pid.setParameters(1, 1, 1);
     TEST_ASSERT_EQUAL(100, pid.compute(1000, 0));
     TEST_ASSERT_EQUAL(100, pid.compute(1000, 0));
@@ -78,7 +78,7 @@ void test_iir_filter(){
 }   
 
 void test_derivative_filter(){
-    ArduinoPID pid(10.0, -1000, 1000, CUSTOM_CUTOFF_HZ, 1.0);
+    CorePID pid(10.0, -1000, 1000, CUSTOM_CUTOFF_HZ, 1.0);
     pid.setParameters(0, 0, 10.0);
     FirstOrderIIRFilter filter;
     filter.setParams(100, 1.0, 10.0);
@@ -86,7 +86,7 @@ void test_derivative_filter(){
 } 
 
 void test_pid_value_limits(){
-    ArduinoPID pid(1, INT16_MIN, INT16_MAX, LOW_FILTERING);
+    CorePID pid(1, INT16_MIN, INT16_MAX, LOW_FILTERING);
     pid.setParameters(255, 255, 255);
     TEST_ASSERT_EQUAL(INT16_MAX, pid.compute(INT16_MAX, 0));
     TEST_ASSERT_EQUAL(INT16_MAX, pid.compute(INT16_MAX, 0));  
