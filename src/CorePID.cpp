@@ -19,8 +19,8 @@ CorePID::CorePID(float freqHz, int16_t min, int16_t max, DerivativeFiltering der
         return;
     }
 
-	minOutput = int64_t(min) * SCALING_MULT;
-	maxOutput = int64_t(max) * SCALING_MULT;
+	minOutput = int32_t(min) * SCALING_MULT;
+	maxOutput = int32_t(max) * SCALING_MULT;
     executionTimer = 0;
     executionIntervalUs = 1000000 / freqHz;
 }
