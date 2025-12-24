@@ -31,17 +31,17 @@ void CorePID::setParameters(PIDGains gains){
 
 void CorePID::setParameters(float kp, float ki, float kd){
 	
-	if (kp < PARAM_MIN || kp > PARAM_MAX){
+	if (kp < 0 || kp > PARAM_MAX){
 		configError = KP_OUT_OF_RANGE;
 		return;
 	}
 
-	if ((ki  / frequencyHz) < PARAM_MIN || (ki  / frequencyHz) > PARAM_MAX){
+	if (ki < 0 || (ki  / frequencyHz) > PARAM_MAX){
 		configError = KI_OUT_OF_RANGE;
 		return;
 	}
 
-	if ((kd * frequencyHz) < PARAM_MIN || (kd * frequencyHz) > PARAM_MAX){
+	if (kd < 0 || (kd * frequencyHz) > PARAM_MAX){
 		configError = KD_OUT_OF_RANGE;
 		return;
 	}
@@ -49,6 +49,16 @@ void CorePID::setParameters(float kp, float ki, float kd){
 	pGain = (int32_t)(kp * SCALING_MULT);
 	iGain = (int32_t)((ki / frequencyHz) * SCALING_MULT);
 	dGain = (int32_t)((kd * frequencyHz) * SCALING_MULT);
+
+	if (ki != 0 && iGain == 0) {
+		configError = KI_OUT_OF_RANGE;
+		return;
+	}
+
+	if (kd != 0 && dGain == 0) {
+		configError = KD_OUT_OF_RANGE;
+		return;
+	}
 
 	onlyPI = (dGain == 0);
 

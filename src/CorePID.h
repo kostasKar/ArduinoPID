@@ -29,7 +29,6 @@
 #define SCALING_MULT   (0x1ULL << SCALING_SHIFT) 
 #define PARAM_BITS   16
 #define PARAM_MAX    (((0x1ULL << PARAM_BITS)-1) >> SCALING_SHIFT) 
-#define PARAM_MIN   (1.0 / SCALING_MULT)
 
 
 enum DerivativeFiltering{
