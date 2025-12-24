@@ -7,7 +7,12 @@ bool PIDGains::saveToEEPROM(int slot){
     EEPROM.put(startAddress, gains);
     int crc = calcrc((char *)gains, sizeof(gains));
     EEPROM.put(startAddress + sizeof(gains), crc);
-    return readFromEEPROM(slot); //verify
+    
+    PIDGains test;
+    return((test.readFromEEPROM(slot)) &&
+           (kp == test.kp) &&
+           (ki == test.ki) &&
+           (kd == test.kd));
 }
 
 bool PIDGains::readFromEEPROM(int slot){
