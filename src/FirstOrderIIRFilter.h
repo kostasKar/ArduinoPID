@@ -8,10 +8,10 @@ class FirstOrderIIRFilter{
     
     public:
     FirstOrderIIRFilter();
-    //output is shifted by SCALING_SHIFT bits defined in .cpp file
     void setParams(double gain, double cutoffFreqHz, double samplingFreqHz);
+    //output is shifted by SCALING_SHIFT bits defined in .cpp file
     int32_t run(int32_t input);
-    int32_t getLastOutput(); //without recalculating it and thus without affecting the integrator state
+    int32_t getLastOutput(); //without recalculating it and thus without affecting the internal state
     void reset();
     
     private:

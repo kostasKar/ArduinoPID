@@ -31,17 +31,17 @@ void CorePID::setParameters(PIDGains gains){
 
 void CorePID::setParameters(float kp, float ki, float kd){
 	
-	if (kp < 0 || kp > PARAM_MAX){
+	if (kp < PARAM_MIN || kp > PARAM_MAX){
 		configError = KP_OUT_OF_RANGE;
 		return;
 	}
 
-	if (ki < 0 || (ki  / frequencyHz) > PARAM_MAX){
+	if ((ki  / frequencyHz) < PARAM_MIN || (ki  / frequencyHz) > PARAM_MAX){
 		configError = KI_OUT_OF_RANGE;
 		return;
 	}
 
-	if (kd < 0 || (kd * frequencyHz) > PARAM_MAX){
+	if ((kd * frequencyHz) < PARAM_MIN || (kd * frequencyHz) > PARAM_MAX){
 		configError = KD_OUT_OF_RANGE;
 		return;
 	}
