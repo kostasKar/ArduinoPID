@@ -137,11 +137,9 @@ int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
         integratorSum += iGain * err;                                           //sum: i24+(i16*i16->i32)->i33
     }
 
-	// Remove the integer scaling factor and apply fair rounding
+	// Remove the integer scaling factor and apply rounding
 	int16_t rval = output >> SCALING_SHIFT;
-	if (output & (0x1ULL << (SCALING_SHIFT - 1))) {
-		rval++;
-	}
+	rval += (output >> (SCALING_SHIFT - 1)) & 1;
 
 	return rval;
 }
