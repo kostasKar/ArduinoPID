@@ -130,7 +130,7 @@ if (err != NO_ERROR) {
 
 | Option                   | Description                                |
 | ------------------------ | ------------------------------------------ |
-| `ZIEGLLER_NICHOLS`       | Fast response, tolerate overshoot (default)|
+| `ZIEGLER_NICHOLS`       | Fast response, tolerate overshoot (default)|
 | `TYREUS_LUYBEN`          | Stability and robustness                   |
 | `PI_ONLY`                | No derivative, rubust, stable              |
 | `CUSTOM_BANDWIDTH_FACTOR`| set custom aggressiveness level         |

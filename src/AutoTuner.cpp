@@ -118,7 +118,7 @@ void AutoTuner::analyzeMeasurements(){
 
     Serial.println(F("Example PID gains for different methods:"));
     Serial.println(F("Ziegler-Nichols:"));
-    getPIDGains(ZIEGLLER_NICHOLS).printout();
+    getPIDGains(ZIEGLER_NICHOLS).printout();
     Serial.println(F("Tyreus-Luyben:"));
     getPIDGains(TYREUS_LUYBEN).printout();
 }
@@ -131,7 +131,7 @@ PIDGains AutoTuner::getPIDGains(GainCalculationMethod method, double customBandw
     double Kp, Ti, Td;
 
     switch(method){
-        case ZIEGLLER_NICHOLS:
+        case ZIEGLER_NICHOLS:
             Kp = 0.6 * Ku;
             Ti = 0.5 * Pu;
             Td = 0.125 * Pu;
