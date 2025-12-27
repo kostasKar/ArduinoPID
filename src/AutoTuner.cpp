@@ -110,27 +110,54 @@ void AutoTuner::analyzeMeasurements(){
 	Serial.print(F("Average Period (us): ")); Serial.println(averagePeriod);
 	Serial.print(F("Average Amplitude: ")); Serial.println(averageAmplitude);
 	
-	double Pu = averagePeriod / 1000000; //in sec
-	double Ku = (4.0 * outputStep) / (M_PI * sqrt(square(averageAmplitude) - square(hysteresis)));
-	
-	Kp = 0.6 * Ku;
-	Ki = Kp / (0.5 * Pu);
-	Kd = Kp * (0.125 * Pu);
-	
-	Serial.print(F("Kp: ")); Serial.println(Kp);
-	Serial.print(F("Ki: ")); Serial.println(Ki);  
-	Serial.print(F("Kd: ")); Serial.println(Kd);
-	
+	Pu = averagePeriod / 1000000; //in sec
+	Ku = (4.0 * outputStep) / (M_PI * sqrt(square(averageAmplitude) - square(hysteresis)));
+		
+	Serial.print(F("Ultimate Gain Ku: ")); Serial.println(Ku);
+	Serial.print(F("Ultimate period Pu (sec): ")); Serial.println(Pu);  
+
+    Serial.println(F("Example PID gains for different methods:"));
+    Serial.println(F("Ziegler-Nichols:"));
+    getPIDGains(ZIEGLLER_NICHOLS).printout();
+    Serial.println(F("Tyreus-Luyben:"));
+    getPIDGains(TYREUS_LUYBEN).printout();
 }
 
 bool AutoTuner::isFinished(){
 	return completed;
 }	
 
-PIDGains AutoTuner::getPIDGains(){
+PIDGains AutoTuner::getPIDGains(GainCalculationMethod method, double customBandwidthFactor){
+    double Kp, Ti, Td;
+
+    switch(method){
+        case ZIEGLLER_NICHOLS:
+            Kp = 0.6 * Ku;
+            Ti = 0.5 * Pu;
+            Td = 0.125 * Pu;
+            break;
+        case TYREUS_LUYBEN:
+            Kp = 0.31 * Ku;
+            Ti = 2.2 * Pu;
+            Td = 0.168 * Pu;
+            break;
+        case PI_ONLY:
+            Kp = 0.45 * Ku;
+            Ti = 0.83 * Pu;
+            Td = 0.0;
+            break;
+        case CUSTOM_BANDWIDTH_FACTOR:
+            if (customBandwidthFactor < 1.5) customBandwidthFactor = 1.5;
+            if (customBandwidthFactor > 10.0) customBandwidthFactor = 10.0;
+            Kp = Ku / customBandwidthFactor;
+            Ti = customBandwidthFactor * Pu;
+            Td = Pu / (4 * customBandwidthFactor);
+            break;
+    }
+
 	PIDGains gains;
 	gains.kp = Kp;
-	gains.ki = Ki;
-	gains.kd = Kd;
+	gains.ki = Kp / Ti;
+	gains.kd = Kp * Td;
 	return gains;
 }

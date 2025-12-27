@@ -7,6 +7,12 @@
 
 #define NUMBER_OF_PEAKS 20
 
+enum GainCalculationMethod{
+    ZIEGLLER_NICHOLS,  //Aggressive - fast
+    TYREUS_LUYBEN,     //Robust, conservative
+    PI_ONLY,           //No derivative term
+    CUSTOM_BANDWIDTH_FACTOR,    //custom ratio of ultimate frequency to desired closed loop frequency
+}; 
 
 
 enum AutotunerStates {
@@ -35,7 +41,9 @@ class AutoTuner {
 	void init();
 	int16_t run(int16_t measurement);
 	bool isFinished();
-	PIDGains getPIDGains();
+    //customBandwidthFactor: ultimate frequency to desired closed loop frequency ratio
+    //Values from 1.5 (highly aggresive) to 10.0 (very conservative)
+	PIDGains getPIDGains(GainCalculationMethod method = ZIEGLLER_NICHOLS, double customBandwidthFactor = 3.2);
 
 	private:
 	
@@ -53,7 +61,7 @@ class AutoTuner {
 	int maxIndex;
 	int minIndex;
 	
-	double Kp, Ki, Kd;
+    double Ku, Pu; //ultimate gain and period
 
 	void analyzeMeasurements();
 

@@ -8,6 +8,7 @@ class PIDGains{
     float kp, ki, kd;
     bool saveToEEPROM(int slot = 0);
     bool readFromEEPROM(int slot = 0);
+    void printout();
 
     private:
     static int calcrc(char *ptr, int count);

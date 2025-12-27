@@ -1,4 +1,5 @@
 #include "PIDGains.h"
+#include <Arduino.h>
 #include <EEPROM.h>
 
 bool PIDGains::saveToEEPROM(int slot){
@@ -31,6 +32,12 @@ bool PIDGains::readFromEEPROM(int slot){
         kd = gains[2];
         return true;
     }
+}
+
+void PIDGains::printout(){
+    Serial.print(F("Kp: ")); Serial.println(kp);
+    Serial.print(F("Ki: ")); Serial.println(ki);  
+    Serial.print(F("Kd: ")); Serial.println(kd);
 }
 
 int PIDGains::calcrc(char *ptr, int count) {
