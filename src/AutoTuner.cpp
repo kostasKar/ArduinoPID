@@ -131,6 +131,7 @@ bool AutoTuner::isFinished(){
 
 PIDGains AutoTuner::getPIDGains(GainCalculationMethod method, double customBandwidthFactor){
     double Kp, Ti, Td;
+    double a = customBandwidthFactor;
 
     switch(method){
         case ZIEGLER_NICHOLS:
@@ -149,11 +150,11 @@ PIDGains AutoTuner::getPIDGains(GainCalculationMethod method, double customBandw
             Td = 0.0;
             break;
         case CUSTOM_BANDWIDTH_FACTOR:
-            if (customBandwidthFactor < 1.5) customBandwidthFactor = 1.5;
-            if (customBandwidthFactor > 10.0) customBandwidthFactor = 10.0;
-            Kp = Ku / customBandwidthFactor;
-            Ti = customBandwidthFactor * Pu;
-            Td = Pu / (4 * customBandwidthFactor);
+            if (a < 1.5) a = 1.5;
+            if (a > 10.0) a = 10.0;
+            Kp = Ku / a;
+            Ti = a * Pu;
+            Td = Pu / (4 * a);
             break;
     }
 
