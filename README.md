@@ -135,10 +135,17 @@ if (err != NO_ERROR) {
 | `PI_ONLY`                | No derivative, rubust, stable              |
 | `CUSTOM_BANDWIDTH_FACTOR`| select custom aggressiveness level         |
 
-When opted for, the next argument customBandwidthFactor is used.
+When opted for, the next argument `customBandwidthFactor` is used.
 Defined as the ratio of ultimate frequency to desired closed loop frequency
 
 Values: from 1.5 (very aggressive - fast) to 10.0 (very conservative - slow)
+
+```
+//Example usage:
+PIDGains pidGains = autotuner.getPIDGains(TYREUS_LUYBEN); 
+//or:
+PIDGains pidGains = autotuner.getPIDGains(CUSTOM_BANDWIDTH_FACTOR, 3.2); 
+```
 
 
  ### 5. Run inside loop()
