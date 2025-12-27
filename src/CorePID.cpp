@@ -50,6 +50,11 @@ void CorePID::setParameters(float kp, float ki, float kd){
 	iGain = (int32_t)((ki / frequencyHz) * SCALING_MULT);
 	dGain = (int32_t)((kd * frequencyHz) * SCALING_MULT);
 
+	if (kp != 0 && pGain == 0) {
+		configError = KP_OUT_OF_RANGE;
+		return;
+	}
+    
 	if (ki != 0 && iGain == 0) {
 		configError = KI_OUT_OF_RANGE;
 		return;

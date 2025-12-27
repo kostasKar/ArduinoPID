@@ -121,6 +121,8 @@ void AutoTuner::analyzeMeasurements(){
     getPIDGains(ZIEGLER_NICHOLS).printout();
     Serial.println(F("Tyreus-Luyben:"));
     getPIDGains(TYREUS_LUYBEN).printout();
+    Serial.println(F("PI only:"));
+    getPIDGains(PI_ONLY).printout();
 }
 
 bool AutoTuner::isFinished(){
