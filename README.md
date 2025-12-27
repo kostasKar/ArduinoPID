@@ -122,9 +122,26 @@ if (err != NO_ERROR) {
  }
  ```
 
+ ### 4. Gains calculation method
+
+ Autotuner's getPIDGains() method accepts optional arguments:
+
+ GainCalculationMethod is an enum with the method options:
+
+| Option                   | Description                                |
+| ------------------------ | ------------------------------------------ |
+| `ZIEGLLER_NICHOLS`       | Fast response, tolerate overshoot (default)|
+| `TYREUS_LUYBEN`          | Stability and robustness                   |
+| `PI_ONLY`                | No derivative, rubust, stable              |
+| `CUSTOM_BANDWIDTH_FACTOR`| select custom aggressiveness level         |
+
+When opted for, the next argument customBandwidthFactor is used.
+Defined as the ratio of ultimate frequency to desired closed loop frequency
+
+Values: from 1.5 (very aggressive - fast) to 10.0 (very conservative - slow)
 
 
- ### 4. Run inside loop()
+ ### 5. Run inside loop()
 
  Call shouldExecuteInLoop() inside loop().
  When it returns true, call compute().
@@ -138,7 +155,7 @@ void loop() {
 }
 ```
 
- ### 5. Reset the controller
+ ### 6. Reset the controller
 
  The internal state of the controller can be reset if needed.
  Optionally, the user can apply the current measurement during reset so that 
