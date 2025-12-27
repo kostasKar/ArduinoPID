@@ -130,10 +130,10 @@ if (err != NO_ERROR) {
 
 | Option                   | Description                                |
 | ------------------------ | ------------------------------------------ |
-| `ZIEGLER_NICHOLS`       | Fast response, tolerate overshoot (default)|
+| `ZIEGLER_NICHOLS`        | Fast response, tolerate overshoot (default)|
 | `TYREUS_LUYBEN`          | Stability and robustness                   |
 | `PI_ONLY`                | No derivative, rubust, stable              |
-| `CUSTOM_BANDWIDTH_FACTOR`| set custom aggressiveness level         |
+| `CUSTOM_BANDWIDTH_FACTOR`| set custom aggressiveness level            |
 
 When opted for, the next argument `customBandwidthFactor` is used.
 Defined as the ratio of ultimate frequency to desired closed loop frequency
