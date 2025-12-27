@@ -10,6 +10,7 @@ CorePID is an optimized PID controller library with an integrated autotuner for 
 * Derivative on measurement
 * Integrator anti-windup using tracking back-calculation
 * Autotuner (relay method) with analysis printout
+* Selectable gain tuning method (Ziegler-Nichols, Tyreus-Luyben, custom closed loop bandwidth)
 * Floating-point PID gains stored in EEPROM with CRC integrity check
 
 ## Performance
@@ -126,7 +127,7 @@ if (err != NO_ERROR) {
 
  Autotuner's `getPIDGains()` method accepts optional arguments:
 
- `GainCalculationMethod` is an enum with the method options:
+ `GainTuningMethod` is an enum with the method options:
 
 | Option                   | Description                                |
 | ------------------------ | ------------------------------------------ |

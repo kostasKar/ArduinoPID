@@ -129,7 +129,7 @@ bool AutoTuner::isFinished(){
 	return completed;
 }	
 
-PIDGains AutoTuner::getPIDGains(GainCalculationMethod method, double customBandwidthFactor){
+PIDGains AutoTuner::getPIDGains(GainTuningMethod method, double customBandwidthFactor){
     double Kp, Ti, Td;
     double a = customBandwidthFactor;
 
