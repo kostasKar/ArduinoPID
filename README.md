@@ -124,16 +124,16 @@ if (err != NO_ERROR) {
 
  ### 4. Gains calculation method
 
- Autotuner's getPIDGains() method accepts optional arguments:
+ Autotuner's `getPIDGains()` method accepts optional arguments:
 
- GainCalculationMethod is an enum with the method options:
+ `GainCalculationMethod` is an enum with the method options:
 
 | Option                   | Description                                |
 | ------------------------ | ------------------------------------------ |
 | `ZIEGLLER_NICHOLS`       | Fast response, tolerate overshoot (default)|
 | `TYREUS_LUYBEN`          | Stability and robustness                   |
 | `PI_ONLY`                | No derivative, rubust, stable              |
-| `CUSTOM_BANDWIDTH_FACTOR`| select custom aggressiveness level         |
+| `CUSTOM_BANDWIDTH_FACTOR`| set custom aggressiveness level         |
 
 When opted for, the next argument `customBandwidthFactor` is used.
 Defined as the ratio of ultimate frequency to desired closed loop frequency
