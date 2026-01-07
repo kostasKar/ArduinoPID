@@ -3,6 +3,17 @@
 
 
 
+static inline int32_t addLimit32(int32_t a, int32_t b){
+    if (b > 0 && a > INT32_MAX - b){
+        return INT32_MAX;
+    } else if (b < 0 && a < INT32_MIN - b){
+        return INT32_MIN;
+    } else {
+        return a + b;
+    }
+}
+
+
 CorePID::CorePID(float freqHz, int16_t min, int16_t max, DerivativeFiltering derivFiltering, float filterCutoffHz):
 	frequencyHz(freqHz),
 	derivativeFiltering(derivFiltering), 
@@ -110,7 +121,7 @@ int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
     //wrap-safe subtraction to avoid issues with int16_t overflow
 	int16_t err =  (int16_t)(uint16_t(setpoint) - uint16_t(measurement));       //i16
     int32_t pTerm, dTerm = 0;
-    int64_t output;
+    int32_t output;
 
 	//Calculating Proportional term:
     pTerm = (int32_t)pGain * err;                                               //i16*i16->i32
@@ -127,7 +138,10 @@ int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
 	}
 	
     //Computing the output 
-    output = pTerm + dTerm + integratorSum;                                     //i32+i32+i33->i34
+    int64_t temp = (int64_t)pTerm + dTerm + integratorSum;
+    if (temp > INT32_MAX) temp = INT32_MAX;
+    if (temp < INT32_MIN) temp = INT32_MIN;
+    output = (int32_t)temp;                              
 
     //Output clamping and integrator update with back-calculation
 	if(output > maxOutput){                                                     //sum, max, min: i24 (i16 << 8)      
@@ -139,12 +153,12 @@ int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
         if (integratorSum > 0) integratorSum = 0;
 		output = minOutput;
 	} else {
-        integratorSum += (int32_t)iGain * err;                                   //sum: i24+(i16*i16->i32)->i33
+        integratorSum = addLimit32(integratorSum, (int32_t)iGain * err);
     }
 
 	// Remove the integer scaling factor and apply rounding
-	int16_t rval = (int32_t)output >> SCALING_SHIFT;
-	rval += ((int32_t)output >> (SCALING_SHIFT - 1)) & 1;
+	int16_t rval = output >> SCALING_SHIFT;
+	rval += (output >> (SCALING_SHIFT - 1)) & 1;
 
 	return rval;
 }

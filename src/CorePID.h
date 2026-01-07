@@ -54,7 +54,7 @@ class CorePID{
     float filterCutoffHz;
 	uint16_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
-	int64_t integratorSum;
+	int32_t integratorSum;
 	bool onlyPI;
 
     uint32_t executionTimer;
