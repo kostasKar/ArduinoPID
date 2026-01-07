@@ -113,14 +113,14 @@ int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
     int64_t output;
 
 	//Calculating Proportional term:
-    pTerm = (int32_t)pGain * err;                                                        //i16*i16->i32
+    pTerm = (int32_t)pGain * err;                                               //i16*i16->i32
 
 	//Calculating Derivative term:
 	if (!onlyPI){
         int16_t diff = (int16_t)(uint16_t(measurement) - uint16_t(lastMeasurement));
         lastMeasurement = measurement;
 		if (derivativeFiltering == NO_FILTERING){
-			dTerm = -(int32_t)dGain * diff;                                              //i16*i16->i32
+			dTerm = -(int32_t)dGain * diff;                                     //i16*i16->i32
 		} else {
 			dTerm = -filter.run(diff);                                          //i32
 		}
@@ -139,7 +139,7 @@ int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
         if (integratorSum > 0) integratorSum = 0;
 		output = minOutput;
 	} else {
-        integratorSum += (int32_t)iGain * err;                                           //sum: i24+(i16*i16->i32)->i33
+        integratorSum += (int32_t)iGain * err;                                   //sum: i24+(i16*i16->i32)->i33
     }
 
 	// Remove the integer scaling factor and apply rounding
