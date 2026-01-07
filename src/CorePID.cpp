@@ -143,8 +143,8 @@ int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
     }
 
 	// Remove the integer scaling factor and apply rounding
-	int16_t rval = output >> SCALING_SHIFT;
-	rval += (output >> (SCALING_SHIFT - 1)) & 1;
+	int16_t rval = (int32_t)output >> SCALING_SHIFT;
+	rval += ((int32_t)output >> (SCALING_SHIFT - 1)) & 1;
 
 	return rval;
 }
