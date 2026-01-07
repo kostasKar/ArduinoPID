@@ -52,7 +52,7 @@ class CorePID{
 	int32_t minOutput, maxOutput;
 	FirstOrderIIRFilter filter;
     float filterCutoffHz;
-	int32_t pGain, iGain, dGain;
+	uint16_t pGain, iGain, dGain;
 	int16_t lastMeasurement;
 	int64_t integratorSum;
 	bool onlyPI;

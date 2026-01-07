@@ -15,13 +15,13 @@ CorePID is an optimized PID controller library with an integrated autotuner for 
 
 ## Performance
 
-The duration of a call to `compute()` was benchmarked on ATmega328P (Arduino UNO)
+The duration of a call to `compute()` was benchmarked on ATmega328P@16MHz (Arduino UNO)
 
 | Scenario                                | Time (µs) |
 | ----------------------------------------| --------- |
-| PID control — derivative **filtered**   | 56.64     |
-| PID control — derivative **unfiltered** | 49.92     |
-| PI control (Kd = 0)                     | 43.04     |
+| PID control — derivative **filtered**   | 50.56     |
+| PID control — derivative **unfiltered** | 43.68     |
+| PI control (Kd = 0)                     | 36.96     |
 
 > **Note:** Integral anti-windup is enabled in all scenarios.
 
