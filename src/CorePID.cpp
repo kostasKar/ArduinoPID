@@ -109,7 +109,7 @@ int16_t CorePID::compute(int16_t setpoint, int16_t measurement){
 	
     //wrap-safe subtraction to avoid issues with int16_t overflow
 	int16_t err =  (int16_t)(uint16_t(setpoint) - uint16_t(measurement));       //i16
-    int32_t pTerm, dTerm;
+    int32_t pTerm, dTerm = 0;
     int64_t output;
 
 	//Calculating Proportional term:
